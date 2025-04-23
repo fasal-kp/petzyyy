@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "764987990216",
+    "project_id": "petzyyy-ca5fe",
+    "storage_bucket": "petzyyy-ca5fe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:764987990216:android:38d7fddb662e2318c205fd",
+        "android_client_info": {
+          "package_name": "com.example.petzyyy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBx7N6HR6TaijGI4I3eYEEdiezlmCz3mks"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
