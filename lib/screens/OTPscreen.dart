@@ -1,5 +1,9 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:petzyyy/screens/Home.dart';
+
+
 
 class OTPScreen extends StatefulWidget {
   final String verificationId;
@@ -13,39 +17,44 @@ class OTPScreen extends StatefulWidget {
 class _OTPScreenState extends State<OTPScreen> {
   final TextEditingController otpController = TextEditingController();
   bool isVerifying = false;
-
-  void verifyOTP() async {
-    String otp = otpController.text.trim();
-    if (otp.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("📩 Enter the 6-digit OTP")),
-      );
-      return;
-    }
-
-    setState(() => isVerifying = true);
-
-    try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: widget.verificationId,
-        smsCode: otp,
-      );
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("✅ Phone number verified")),
-      );
-
-      // TODO: Navigate to home screen
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Invalid OTP: ${e.message}")),
-      );
-    }
-
-    setState(() => isVerifying = false);
+void verifyOTP() async {
+  String otp = otpController.text.trim();
+  if (otp.length < 6) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("📩 Enter the 6-digit OTP")),
+    );
+    return;
   }
+
+  setState(() => isVerifying = true);
+
+  try {
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+      verificationId: widget.verificationId,
+      smsCode: otp,
+    );
+
+    await FirebaseAuth.instance.signInWithCredential(credential);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("✅ Phone number verified")),
+    );
+
+    // ✅ Navigate to HomeScreen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreen()),
+    );
+
+  } on FirebaseAuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("❌ Invalid OTP: ${e.message}")),
+    );
+  }
+
+  setState(() => isVerifying = false);
+}
+
 
   @override
   Widget build(BuildContext context) {
