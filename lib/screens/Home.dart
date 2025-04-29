@@ -62,7 +62,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.menu, color: Colors.white),
+              Icon(Icons.shopping_cart, color: Colors.white),
             ],
           ),
           const SizedBox(height: 16),
@@ -132,7 +132,7 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle("Product Category"),
+        _sectionTitleWithImage("Product Category", "assets/Vector.png"),
         SizedBox(
           height: 120,
           child: ListView.builder(
@@ -164,7 +164,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryItem({required String? imagePath, required String label}) {
+  Widget _buildCategoryItem(
+      {required String? imagePath, required String label}) {
     return Container(
       width: 80,
       margin: EdgeInsets.symmetric(horizontal: 8),
@@ -206,16 +207,64 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildPetTypeSection() {
-    final petTypes = ['Cat', 'Dog', 'Hen', 'Horse'];
+    final petTypes = {
+      'Cat': 'assets/cat.png',
+      'Dog': 'assets/dog.png',
+      'Hen': 'assets/hen.png',
+      'Horse': 'assets/horse.png',
+      'Goat': 'assets/goat.png',
+      'Pigeon': 'assets/pigeon.png',
+      'Fish': 'assets/fish.png',
+      'Parrot': 'assets/parrot.png',
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle("Products according to pet type"),
+        _sectionTitleWithImage(
+            "Products according to pet type", "assets/Vector.png"),
         SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: petTypes.map((type) => Chip(label: Text(type))).toList(),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            itemCount: petTypes.length,
+            itemBuilder: (context, index) {
+              final petName = petTypes.keys.elementAt(index);
+              final imagePath = petTypes[petName];
+
+              return Container(
+                width: 80,
+                margin: EdgeInsets.symmetric(horizontal: 8),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 72,
+                      width: 72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(color: Colors.grey.shade300, blurRadius: 5)
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Image.asset(imagePath!, fit: BoxFit.contain),
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      petName,
+                      style: TextStyle(fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
         SizedBox(height: 16),
       ],
@@ -223,7 +272,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBrandSection() {
-    final brands = ['Pet8', 'Me-O', 'Kanimal'];
+    final brands = [];
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -289,6 +338,32 @@ class HomeScreen extends StatelessWidget {
           Text(title,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Text("View All", style: TextStyle(color: Colors.blue)),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitleWithImage(String title, String imagePath) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Image.asset(
+            imagePath,
+            height: 24,
+            width: 24,
+            fit: BoxFit.contain,
+          ),
+          SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Spacer(),
+          Text(
+            "View All",
+            style: TextStyle(color: Colors.blue),
+          ),
         ],
       ),
     );

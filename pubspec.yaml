@@ -1,6 +1,6 @@
 name: petzyyy
 description: "A new Flutter project."
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 version: 1.0.0+1
 
@@ -16,8 +16,6 @@ dependencies:
   cloud_firestore: ^5.6.6
   get: ^4.7.2
   pinput: ^5.0.1
-  
-
 
 dev_dependencies:
   flutter_test:
@@ -45,7 +43,12 @@ flutter:
     - assets/Beauty.png
     - assets/First.png
     - assets/Medicine.png
-
-
-
-
+    - assets/Vector.png
+    - assets/pigeon.png
+    - assets/parrot.png
+    - assets/horse.png
+    - assets/hen.png
+    - assets/fish.png
+    - assets/goat.png
+    - assets/dog.png
+    - assets/cat.png
