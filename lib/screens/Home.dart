@@ -322,19 +322,57 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildFooter() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      color: Colors.pink[100],
-      child: Column(
-        children: [
-          Text("Woof Woof", style: TextStyle(fontWeight: FontWeight.bold)),
-          Text("Follow Petpaw"),
-          SizedBox(height: 10),
-          Image.asset('assets/images/pet_footer.png', height: 100),
-        ],
+  return Center(
+    child: SizedBox(
+      width: 325, // Set your desired width
+      height: 290, // Set your desired height
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFFFFB6C1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '"Woof Woof"',
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 8),
+            RichText(
+              text: TextSpan(
+                text: 'Follow ',
+                style: TextStyle(color: Colors.black, fontSize: 18),
+                children: [
+                  TextSpan(
+                    text: 'Petpaw',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
+            Image.asset(
+              'assets/follow.png',
+              height: 160,
+              fit: BoxFit.contain,
+            ),
+          ],
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _sectionTitleWithImage(String title, String imagePath) {
     return Padding(
