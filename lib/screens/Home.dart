@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -164,8 +166,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryItem(
-      {required String? imagePath, required String label}) {
+  Widget _buildCategoryItem({required String? imagePath, required String label}) {
     return Container(
       width: 80,
       margin: EdgeInsets.symmetric(horizontal: 8),
@@ -179,9 +180,7 @@ class HomeScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white,
-                boxShadow: [
-                  BoxShadow(color: Colors.grey.shade300, blurRadius: 5)
-                ],
+                boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)],
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -189,10 +188,7 @@ class HomeScreen extends StatelessWidget {
               ),
             )
           else
-            CircleAvatar(
-              backgroundColor: Colors.orange,
-              radius: 30,
-            ),
+            CircleAvatar(backgroundColor: Colors.orange, radius: 30),
           SizedBox(height: 8),
           Text(
             label,
@@ -221,8 +217,7 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitleWithImage(
-            "Products according to pet type", "assets/Vector.png"),
+        _sectionTitleWithImage("Products according to pet type", "assets/Vector.png"),
         SizedBox(height: 8),
         SizedBox(
           height: 100,
@@ -245,9 +240,7 @@ class HomeScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(color: Colors.grey.shade300, blurRadius: 5)
-                        ],
+                        boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)],
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -272,11 +265,24 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBrandSection() {
-    final brands = [];
+    final brands = [
+      'assets/kanmal.png',
+      'assets/me000.png',
+      'assets/pet888.png',
+    ];
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: brands.map((brand) => Chip(label: Text(brand))).toList(),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: brands.map((brand) {
+          return CircleAvatar(
+            backgroundImage: AssetImage(brand),
+            radius: 24,
+            backgroundColor: Colors.white,
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -301,10 +307,11 @@ class HomeScreen extends StatelessWidget {
           padding: EdgeInsets.all(8),
           child: Column(
             children: [
-              Expanded(child: Placeholder()),
+              Expanded(
+                child: Image.asset('assets/royal_canin.png', fit: BoxFit.cover),
+              ),
               SizedBox(height: 8),
-              Text("Royal Canin",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Royal Canin", style: TextStyle(fontWeight: FontWeight.bold)),
               Text("Adult Indoor Dry Food", style: TextStyle(fontSize: 12)),
               Text("\$7.99", style: TextStyle(color: Colors.red)),
             ],
@@ -329,41 +336,16 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text("View All", style: TextStyle(color: Colors.blue)),
-        ],
-      ),
-    );
-  }
-
   Widget _sectionTitleWithImage(String title, String imagePath) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Image.asset(
-            imagePath,
-            height: 24,
-            width: 24,
-            fit: BoxFit.contain,
-          ),
+          Image.asset(imagePath, height: 24, width: 24, fit: BoxFit.contain),
           SizedBox(width: 8),
-          Text(
-            title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Spacer(),
-          Text(
-            "View All",
-            style: TextStyle(color: Colors.blue),
-          ),
+          Text("View All", style: TextStyle(color: Colors.blue)),
         ],
       ),
     );
