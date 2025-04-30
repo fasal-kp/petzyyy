@@ -11,7 +11,7 @@ class HomeScreen extends StatelessWidget {
         currentIndex: 0,
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
@@ -37,7 +37,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.teal, Colors.yellowAccent],
           begin: Alignment.topLeft,
@@ -47,14 +47,14 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SafeArea(child: SizedBox(height: 10)),
+          const SafeArea(child: SizedBox(height: 10)),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: 'Search for products',
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -64,14 +64,14 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.shopping_cart, color: Colors.white),
+              const Icon(Icons.shopping_cart, color: Colors.white),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
+              const Expanded(
                 flex: 2,
                 child: Text(
                   "🐾 Petzy\nNo Discount!\nShop at Petzy App and get up to 5%",
@@ -139,7 +139,7 @@ class HomeScreen extends StatelessWidget {
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: categoriesLine1.length,
             itemBuilder: (context, index) {
               final category = categoriesLine1[index];
@@ -148,12 +148,12 @@ class HomeScreen extends StatelessWidget {
             },
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         SizedBox(
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: categoriesLine2.length,
             itemBuilder: (context, index) {
               final category = categoriesLine2[index];
@@ -169,7 +169,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildCategoryItem({required String? imagePath, required String label}) {
     return Container(
       width: 80,
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -188,11 +188,11 @@ class HomeScreen extends StatelessWidget {
               ),
             )
           else
-            CircleAvatar(backgroundColor: Colors.orange, radius: 30),
-          SizedBox(height: 8),
+            const CircleAvatar(backgroundColor: Colors.orange, radius: 30),
+          const SizedBox(height: 8),
           Text(
             label,
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -218,12 +218,12 @@ class HomeScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionTitleWithImage("Products according to pet type", "assets/Vector.png"),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         SizedBox(
           height: 100,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             itemCount: petTypes.length,
             itemBuilder: (context, index) {
               final petName = petTypes.keys.elementAt(index);
@@ -231,7 +231,7 @@ class HomeScreen extends StatelessWidget {
 
               return Container(
                 width: 80,
-                margin: EdgeInsets.symmetric(horizontal: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 8),
                 child: Column(
                   children: [
                     Container(
@@ -247,10 +247,10 @@ class HomeScreen extends StatelessWidget {
                         child: Image.asset(imagePath!, fit: BoxFit.contain),
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
                       petName,
-                      style: TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 12),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -259,7 +259,7 @@ class HomeScreen extends StatelessWidget {
             },
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -286,93 +286,200 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      padding: EdgeInsets.all(16),
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: 10,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        childAspectRatio: 0.65,
-      ),
-      itemBuilder: (context, index) {
-        return Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: EdgeInsets.all(8),
-          child: Column(
-            children: [
-              Expanded(
-                child: Image.asset('assets/royal_canin.png', fit: BoxFit.cover),
-              ),
-              SizedBox(height: 8),
-              Text("Royal Canin", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text("Adult Indoor Dry Food", style: TextStyle(fontSize: 12)),
-              Text("\$7.99", style: TextStyle(color: Colors.red)),
-            ],
-          ),
-        );
-      },
-    );
-  }
+ Widget _buildProductGrid() {
+  final productImages = [
+    'assets/royalcanin2.png',
+    'assets/333royal.png',
+    'assets/royal canin.png',
+    'assets/4royal.png',
+    'assets/5royal.png',
+    'assets/6royal.png',
+    'assets/7royal.png',
+    'assets/8royal.png',
+    'assets/333royal.png',
+    'assets/royalcanin2.png',
+  ];
 
-  Widget _buildFooter() {
-  return Center(
-    child: SizedBox(
-      width: 325, // Set your desired width
-      height: 290, // Set your desired height
-      child: Container(
+  return GridView.builder(
+    shrinkWrap: true,
+    padding: const EdgeInsets.all(16),
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: productImages.length,
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 0.65,
+    ),
+    itemBuilder: (context, index) {
+      return Container(
         decoration: BoxDecoration(
-          color: Color(0xFFFFB6C1),
-          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(12),
         ),
-        padding: EdgeInsets.symmetric(vertical: 24, horizontal: 20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              '"Woof Woof"',
-              style: TextStyle(
-                fontStyle: FontStyle.italic,
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
+            // PetPaw Badge on Top Center
+          // PetPaw Badge with red background, image + text side-by-side
+Padding(
+  padding: const EdgeInsets.only(top: 8),
+  child: Container(
+    height: 30,
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    decoration: BoxDecoration(
+      color: Colors.red,
+      borderRadius: BorderRadius.circular(15),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(
+          'assets/hhhh.png',
+          height: 12,
+          width: 12,
+          fit: BoxFit.contain,
+        ),
+        const SizedBox(width: 4),
+        const Text(
+          'PetPaw',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+            // Product Image
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Image.asset(
+                productImages[index],
+                height: 100,
+                width: 100,
+                fit: BoxFit.contain,
               ),
             ),
-            SizedBox(height: 8),
-            RichText(
-              text: TextSpan(
-                text: 'Follow ',
-                style: TextStyle(color: Colors.black, fontSize: 18),
+
+            const SizedBox(height: 8),
+
+            // Brand
+            const Text(
+              "Royal Canin",
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 4),
+
+            // Product Name
+            const Text(
+              "INSTINCT POUCH GRAVY",
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 6),
+
+            // Price and Discount Row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  TextSpan(
-                    text: 'Petpaw',
+                  const Text(
+                    "299₹",
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
                       color: Colors.black,
-                      fontSize: 20,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      "-5%",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 20),
-            Image.asset(
-              'assets/follow.png',
-              height: 160,
-              fit: BoxFit.contain,
-            ),
           ],
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 
+  Widget _buildFooter() {
+    return Center(
+      child: SizedBox(
+        width: 325,
+        height: 290,
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFB6C1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                '"Woof Woof"',
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              RichText(
+                text: const TextSpan(
+                  text: 'Follow ',
+                  style: TextStyle(color: Colors.black, fontSize: 18),
+                  children: [
+                    TextSpan(
+                      text: 'Petpaw',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Image.asset(
+                'assets/follow.png',
+                height: 160,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _sectionTitleWithImage(String title, String imagePath) {
     return Padding(
@@ -380,10 +487,10 @@ class HomeScreen extends StatelessWidget {
       child: Row(
         children: [
           Image.asset(imagePath, height: 24, width: 24, fit: BoxFit.contain),
-          SizedBox(width: 8),
-          Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Spacer(),
-          Text("View All", style: TextStyle(color: Colors.blue)),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Spacer(),
+          const Text("View All", style: TextStyle(color: Colors.blue)),
         ],
       ),
     );
