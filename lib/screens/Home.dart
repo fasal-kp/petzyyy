@@ -1,14 +1,37 @@
 import 'package:flutter/material.dart';
+import 'Chat.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  void _onTabTapped(int index) {
+    if (index == 1) {
+      // Navigate to ChatPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ChatPage()),
+      );
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         items: const [
@@ -19,20 +42,27 @@ class HomeScreen extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildCategorySection(),
-            _buildPetTypeSection(),
-            _buildBrandSection(),
-            _buildProductGrid(),
-            _buildFooter(),
-          ],
-        ),
+      body: _currentIndex == 0
+          ? _buildMainContent()
+          : const Center(child: Text('This section is not implemented')),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildHeader(),
+          _buildCategorySection(),
+          _buildPetTypeSection(),
+          _buildBrandSection(),
+          _buildProductGrid(),
+          _buildFooter(),
+        ],
       ),
     );
   }
+}
 
   Widget _buildHeader() {
     return Container(
@@ -495,4 +525,4 @@ Padding(
       ),
     );
   }
-}
+
