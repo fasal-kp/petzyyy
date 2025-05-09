@@ -9,9 +9,11 @@ class ChatPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Chats',
-            style: TextStyle(
-                color: Colors.blue, fontSize: 22, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Chats',
+          style: TextStyle(
+              color: Colors.blue, fontSize: 22, fontWeight: FontWeight.bold),
+        ),
         actions: const [
           Icon(Icons.add, color: Colors.black),
           SizedBox(width: 16),
@@ -26,32 +28,42 @@ class ChatPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            const Text('Pinned', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Pinned',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Row(
               children: [
-                _pinnedCard("Abram", "Yesterday",
-                    "I would like to your consent on upcoming meeting...", false),
+                _pinnedCard(
+                    "Abram",
+                    "Yesterday",
+                    "I would like to your consent on upcoming meeting...",
+                    false,
+                    "assets/Avatars.png"),
                 const SizedBox(width: 12),
                 _pinnedCard("Ruben", "3:39 pm",
-                    "You have not been up for tennis match? Are you OK?", true),
+                    "You have not been up for tennis match? Are you OK?", true,
+                    "assets/Avatars.png"),
               ],
             ),
             const SizedBox(height: 20),
-            const Text('Recent', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Recent',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             _chatTile("Jacob Korsgaard", "Lorem ipsum dolor sit", "Yesterday",
-                "assets/jacob.jpg"),
+                "assets/avtar2.png"),
             _chatTile("Brandon", "Awesome!! I’ll pick you...", "20 July",
-                "assets/brandon.jpg"),
+                "assets/avtar2.png"),
             _chatTile("Phillip Carder", "Ullamcorper vulputate", "20 July",
-                "assets/phillip.jpg", isMuted: true),
+                "assets/avtar2.png",
+                isMuted: true),
             _chatTile("Emery Bergson", "Ok. I’ll take care of it.", "18 July",
-                "assets/emery.jpg", isRead: true),
+                "assets/avtar2.png",
+                isRead: true),
             _chatTile("Bank", "Your bank statement...", "10 July",
-                null, isMuted: true, isUnread: true),
+                "assets/bankavtar.png",
+                isMuted: true, isUnread: true),
             _chatTile("Brandon Baptista", "Nibh sit malesuada", "02 July",
-                "assets/brandon_b.jpg"),
+                "assets/avtar2.png"),
           ],
         ),
       ),
@@ -61,40 +73,42 @@ class ChatPage extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: false,
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: ''),
           BottomNavigationBarItem(
               icon: Icon(Icons.chat_bubble, color: Colors.red), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.notifications_none), label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline), label: ''),
         ],
       ),
     );
   }
 
-  Widget _pinnedCard(String name, String time, String message, bool unread) {
+  static Widget _pinnedCard(
+      String name, String time, String message, bool unread, String imagePath) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.grey.withOpacity(0.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4))
-            ]),
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.grey.withOpacity(0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 4))
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                CircleAvatar(radius: 16),
+                CircleAvatar(radius: 16, backgroundImage: AssetImage(imagePath)),
                 const SizedBox(width: 8),
-                Text(name,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
                 const Spacer(),
                 Text(time, style: const TextStyle(fontSize: 12)),
                 if (unread)
@@ -115,7 +129,8 @@ class ChatPage extends StatelessWidget {
     );
   }
 
-  Widget _chatTile(String name, String message, String time, String? imagePath,
+  static Widget _chatTile(String name, String message, String time,
+      String? imagePath,
       {bool isMuted = false, bool isRead = false, bool isUnread = false}) {
     return ListTile(
       leading: imagePath != null
