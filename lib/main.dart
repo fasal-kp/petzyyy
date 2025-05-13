@@ -1,9 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:petzyyy/screens/chatScreen.dart';
 import 'package:petzyyy/screens/phoneAuthScreen.dart';
 import 'package:pinput/pinput.dart';
 import 'package:get/get.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()), // Change this to your actual next screen
+        MaterialPageRoute(builder: (context) => const chatScreen()), // Change this to your actual next screen
       );
     });
   }
