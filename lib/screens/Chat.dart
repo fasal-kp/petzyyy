@@ -50,21 +50,21 @@ class ChatPage extends StatelessWidget {
             const Text('Recent',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _chatTile("Jacob Korsgaard", "Lorem ipsum dolor sit", "Yesterday",
-                "assets/avtar2.png"),
-            _chatTile("Brandon", "Awesome!! I’ll pick you...", "20 July",
-                "assets/avtar2.png"),
-            _chatTile("Phillip Carder", "Ullamcorper vulputate", "20 July",
-                "assets/avtar2.png",
+            _chatTile(context, "Jacob Korsgaard", "Lorem ipsum dolor sit",
+                "Yesterday", "assets/avtar2.png"),
+            _chatTile(context, "Brandon", "Awesome!! I’ll pick you...",
+                "20 July", "assets/avtar2.png"),
+            _chatTile(context, "Phillip Carder", "Ullamcorper vulputate",
+                "20 July", "assets/avtar2.png",
                 isMuted: true),
-            _chatTile("Emery Bergson", "Ok. I’ll take care of it.", "18 July",
-                "assets/avtar2.png",
+            _chatTile(context, "Emery Bergson", "Ok. I’ll take care of it.",
+                "18 July", "assets/avtar2.png",
                 isRead: true),
-            _chatTile("Bank", "Your bank statement...", "10 July",
+            _chatTile(context, "Bank", "Your bank statement...", "10 July",
                 "assets/bankavtar.png",
                 isMuted: true, isUnread: true),
-            _chatTile("Brandon Baptista", "Nibh sit malesuada", "02 July",
-                "assets/avtar2.png"),
+            _chatTile(context, "Brandon Baptista", "Nibh sit malesuada",
+                "02 July", "assets/avtar2.png"),
           ],
         ),
       ),
@@ -87,8 +87,8 @@ class ChatPage extends StatelessWidget {
     );
   }
 
-  static Widget _pinnedCard(
-      String name, String time, String message, bool unread, String imagePath) {
+  static Widget _pinnedCard(String name, String time, String message,
+      bool unread, String imagePath) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -130,24 +130,43 @@ class ChatPage extends StatelessWidget {
     );
   }
 
-  static Widget _chatTile(String name, String message, String time,
-      String? imagePath,
-      {bool isMuted = false, bool isRead = false, bool isUnread = false}) {
-    return ListTile(
-      leading: imagePath != null
-          ? CircleAvatar(backgroundImage: AssetImage(imagePath))
-          : const CircleAvatar(child: Icon(Icons.account_circle_outlined)),
-      title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(message, maxLines: 1, overflow: TextOverflow.ellipsis),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(time, style: const TextStyle(fontSize: 12)),
-          if (isMuted)
-            const Icon(Icons.notifications_off, size: 16, color: Colors.grey),
-          if (isUnread)
-            const Icon(Icons.circle, size: 8, color: Colors.blue),
-        ],
+  static Widget _chatTile(
+      BuildContext context,
+      String name,
+      String message,
+      String time,
+      String? imagePath, {
+        bool isMuted = false,
+        bool isRead = false,
+        bool isUnread = false,
+      }) {
+    return InkWell(
+      onTap: () {
+        if (name == "Jacob Korsgaard") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ChatScreen(userId: "jacob_user_id"),
+            ),
+          );
+        }
+      },
+      child: ListTile(
+        leading: imagePath != null
+            ? CircleAvatar(backgroundImage: AssetImage(imagePath))
+            : const CircleAvatar(child: Icon(Icons.account_circle_outlined)),
+        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(message, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(time, style: const TextStyle(fontSize: 12)),
+            if (isMuted)
+              const Icon(Icons.notifications_off, size: 16, color: Colors.grey),
+            if (isUnread)
+              const Icon(Icons.circle, size: 8, color: Colors.blue),
+          ],
+        ),
       ),
     );
   }
