@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'chatScreen.dart';
 
 class ChatPage extends StatelessWidget {
@@ -13,7 +14,10 @@ class ChatPage extends StatelessWidget {
         title: const Text(
           'Chats',
           style: TextStyle(
-              color: Colors.blue, fontSize: 22, fontWeight: FontWeight.bold),
+            color: Colors.blue,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: const [
           Icon(Icons.add, color: Colors.black),
@@ -29,42 +33,77 @@ class ChatPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            const Text('Pinned',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Pinned', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Row(
               children: [
                 _pinnedCard(
-                    "Abram",
-                    "Yesterday",
-                    "I would like to your consent on upcoming meeting...",
-                    false,
-                    "assets/Avatars.png"),
+                  name: "Abram",
+                  time: "Yesterday",
+                  message: "I would like your consent on upcoming meeting...",
+                  unread: false,
+                  imagePath: "assets/Avatars.png",
+                ),
                 const SizedBox(width: 12),
-                _pinnedCard("Ruben", "3:39 pm",
-                    "You have not been up for tennis match? Are you OK?", true,
-                    "assets/Avatars.png"),
+                _pinnedCard(
+                  name: "Ruben",
+                  time: "3:39 pm",
+                  message: "You have not been up for tennis match? Are you OK?",
+                  unread: true,
+                  imagePath: "assets/Avatars.png",
+                ),
               ],
             ),
             const SizedBox(height: 20),
-            const Text('Recent',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Recent', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _chatTile(context, "Jacob Korsgaard", "Lorem ipsum dolor sit",
-                "Yesterday", "assets/avtar2.png"),
-            _chatTile(context, "Brandon", "Awesome!! I’ll pick you...",
-                "20 July", "assets/avtar2.png"),
-            _chatTile(context, "Phillip Carder", "Ullamcorper vulputate",
-                "20 July", "assets/avtar2.png",
-                isMuted: true),
-            _chatTile(context, "Emery Bergson", "Ok. I’ll take care of it.",
-                "18 July", "assets/avtar2.png",
-                isRead: true),
-            _chatTile(context, "Bank", "Your bank statement...", "10 July",
-                "assets/bankavtar.png",
-                isMuted: true, isUnread: true),
-            _chatTile(context, "Brandon Baptista", "Nibh sit malesuada",
-                "02 July", "assets/avtar2.png"),
+            _chatTile(
+              context,
+              name: "Jacob Korsgaard",
+              message: "Lorem ipsum dolor sit",
+              time: "Yesterday",
+              imagePath: "assets/avtar2.png",
+              userId: "jacob_user_id", // replace with real UID from Firestore
+            ),
+            _chatTile(
+              context,
+              name: "Brandon",
+              message: "Awesome!! I’ll pick you...",
+              time: "20 July",
+              imagePath: "assets/avtar2.png",
+            ),
+            _chatTile(
+              context,
+              name: "Phillip Carder",
+              message: "Ullamcorper vulputate",
+              time: "20 July",
+              imagePath: "assets/avtar2.png",
+              isMuted: true,
+            ),
+            _chatTile(
+              context,
+              name: "Emery Bergson",
+              message: "Ok. I’ll take care of it.",
+              time: "18 July",
+              imagePath: "assets/avtar2.png",
+              isRead: true,
+            ),
+            _chatTile(
+              context,
+              name: "Bank",
+              message: "Your bank statement...",
+              time: "10 July",
+              imagePath: "assets/bankavtar.png",
+              isMuted: true,
+              isUnread: true,
+            ),
+            _chatTile(
+              context,
+              name: "Brandon Baptista",
+              message: "Nibh sit malesuada",
+              time: "02 July",
+              imagePath: "assets/avtar2.png",
+            ),
           ],
         ),
       ),
@@ -78,18 +117,21 @@ class ChatPage extends StatelessWidget {
           BottomNavigationBarItem(
               icon: Icon(Icons.chat_bubble, color: Colors.red), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.notifications_none), label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
         ],
       ),
     );
   }
 
-  static Widget _pinnedCard(String name, String time, String message,
-      bool unread, String imagePath) {
-    return Expanded(
+  static Widget _pinnedCard({
+    required String name,
+    required String time,
+    required String message,
+    required bool unread,
+    required String imagePath,
+  }) {
+    return Flexible(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -97,9 +139,10 @@ class ChatPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-                color: Colors.grey.withOpacity(0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 4))
+              color: Colors.grey.withOpacity(0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
           ],
         ),
         child: Column(
@@ -120,10 +163,12 @@ class ChatPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(message,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12))
+            Text(
+              message,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 12),
+            ),
           ],
         ),
       ),
@@ -131,30 +176,39 @@ class ChatPage extends StatelessWidget {
   }
 
   static Widget _chatTile(
-      BuildContext context,
-      String name,
-      String message,
-      String time,
-      String? imagePath, {
-        bool isMuted = false,
-        bool isRead = false,
-        bool isUnread = false,
-      }) {
+    BuildContext context, {
+    required String name,
+    required String message,
+    required String time,
+    required String imagePath,
+    String? userId,
+    bool isMuted = false,
+    bool isRead = false,
+    bool isUnread = false,
+  }) {
     return InkWell(
       onTap: () {
-        if (name == "Jacob Korsgaard") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ChatScreen(userId: "jacob_user_id"),
-            ),
-          );
+        if (userId != null) {
+          final currentUser = FirebaseAuth.instance.currentUser;
+          if (currentUser != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatScreen(
+                  currentUserId: currentUser.uid,
+                  otherUserId: userId,
+                ),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('You are not logged in')),
+            );
+          }
         }
       },
       child: ListTile(
-        leading: imagePath != null
-            ? CircleAvatar(backgroundImage: AssetImage(imagePath))
-            : const CircleAvatar(child: Icon(Icons.account_circle_outlined)),
+        leading: CircleAvatar(backgroundImage: AssetImage(imagePath)),
         title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(message, maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: Column(

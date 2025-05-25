@@ -3,9 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petzyyy/service/database.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String userId;
+  final String currentUserId;
+  final String otherUserId;
 
-  const ChatScreen({super.key, required this.userId});
+  const ChatScreen({
+    super.key,
+    required this.currentUserId,
+    required this.otherUserId,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -13,19 +18,25 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
-  final String chatId = "default_chat"; // Replace with real chat ID logic
   final DatabaseService _databaseService = DatabaseService();
+
+  late final String chatId;
 
   @override
   void initState() {
     super.initState();
-    _databaseService.createChatIfNotExists(chatId, [widget.userId]);
+    chatId = _databaseService.getChatId(widget.currentUserId, widget.otherUserId);
+    _databaseService.createChatIfNotExists(widget.currentUserId, widget.otherUserId);
   }
 
   void sendMessage() {
     final text = _messageController.text.trim();
     if (text.isNotEmpty) {
-      _databaseService.sendMessage(chatId, widget.userId, text);
+      _databaseService.sendMessage(
+        senderId: widget.currentUserId,
+        receiverId: widget.otherUserId,
+        message: text,
+      );
       _messageController.clear();
     }
   }
@@ -73,7 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: StreamBuilder<QuerySnapshot>(
-                stream: _databaseService.getMessages(chatId),
+                stream: _databaseService.getMessages(widget.currentUserId, widget.otherUserId),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return const Center(child: Text("Something went wrong"));
@@ -88,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
                       final data = docs[index];
-                      final isMe = data['senderId'] == widget.userId;
+                      final isMe = data['senderId'] == widget.currentUserId;
                       final message = data['message'];
                       final time = "Now"; // Placeholder
 
