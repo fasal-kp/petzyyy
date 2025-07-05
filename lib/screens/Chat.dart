@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chatScreen.dart';
+import 'adding.dart'; // <-- Make sure path is correct
 
-class ChatPage extends StatelessWidget {
+class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
+
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+  int _currentIndex = 1; // Chat tab
+
+  void _onTabTapped(int index) {
+    if (index == 0) {
+      Navigator.pop(context); // Go back to Home
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddPetPage()),
+      );
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +86,7 @@ class ChatPage extends StatelessWidget {
               message: "Lorem ipsum dolor sit",
               time: "Yesterday",
               imagePath: "assets/avtar2.png",
-              userId: "jacob_user_id", // replace with real UID from Firestore
+              userId: "jacob_user_id", // Replace with actual ID
             ),
             _chatTile(
               context,
@@ -108,14 +131,14 @@ class ChatPage extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: false,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble, color: Colors.red), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),

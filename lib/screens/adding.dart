@@ -31,9 +31,14 @@ class _AddPetPageState extends State<AddPetPage> {
   final types = ['Cat', 'Dog', 'Bird'];
   final categories = ['Food', 'Toy', 'Medicine'];
 
+  int _currentIndex = 2; // highlight Add icon
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.red,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -60,7 +65,12 @@ class _AddPetPageState extends State<AddPetPage> {
                       if (_image != null)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: Image.file(_image!, width: 100, height: 100, fit: BoxFit.cover),
+                          child: Image.file(
+                            _image!,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       const SizedBox(width: 10),
                       imageBox('assets/cat.jpg'),
@@ -78,15 +88,35 @@ class _AddPetPageState extends State<AddPetPage> {
                   setState(() => selectedCategory = val);
                 }),
                 const SizedBox(height: 12),
-                buildTextField('Discription', descriptionController),
+                buildTextField('Description', descriptionController),
                 const SizedBox(height: 12),
-                buildTextField('Price', priceController, inputType: TextInputType.number),
+                buildTextField(
+                  'Price',
+                  priceController,
+                  inputType: TextInputType.number,
+                ),
                 const SizedBox(height: 20),
                 Align(
                   alignment: Alignment.centerRight,
                   child: OutlinedButton(
                     onPressed: () {
-                      // Submit logic here
+                      // Your submit logic here
+                      final type = selectedType;
+                      final category = selectedCategory;
+                      final desc = descriptionController.text.trim();
+                      final price = priceController.text.trim();
+
+                      if (_image == null || type == null || category == null || desc.isEmpty || price.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please fill all fields and select an image')),
+                        );
+                        return;
+                      }
+
+                      // Process form data here (upload, save, etc.)
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Pet submitted successfully!')),
+                      );
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
@@ -102,6 +132,7 @@ class _AddPetPageState extends State<AddPetPage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+        currentIndex: 2,
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
         showSelectedLabels: false,
@@ -109,7 +140,7 @@ class _AddPetPageState extends State<AddPetPage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
         ],
@@ -150,7 +181,7 @@ class _AddPetPageState extends State<AddPetPage> {
       controller: controller,
       keyboardType: inputType,
       decoration: InputDecoration(
-        hintText: 'Choose a ${hint.toLowerCase()}',
+        hintText: 'Enter $hint',
         filled: true,
         fillColor: Colors.grey.shade200,
         border: InputBorder.none,
