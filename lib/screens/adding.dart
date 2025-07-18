@@ -38,6 +38,7 @@ class _AddPetPageState extends State<AddPetPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.red,
+        elevation: 0,
       ),
       body: SafeArea(
         child: Padding(
@@ -48,12 +49,20 @@ class _AddPetPageState extends State<AddPetPage> {
               children: [
                 GestureDetector(
                   onTap: _chooseFile,
-                  child: Row(
-                    children: const [
-                      Icon(Icons.camera_alt_outlined),
-                      SizedBox(width: 8),
-                      Text('Choose a file'),
-                    ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.camera_alt_outlined),
+                        SizedBox(width: 8),
+                        Text('Choose a file'),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -63,16 +72,19 @@ class _AddPetPageState extends State<AddPetPage> {
                     scrollDirection: Axis.horizontal,
                     children: [
                       if (_image != null)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(
-                            _image!,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
+                        Container(
+                          width: 100,
+                          height: 100,
+                          margin: const EdgeInsets.symmetric(horizontal: 5),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.grey.shade200,
+                            image: DecorationImage(
+                              image: FileImage(_image!),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      const SizedBox(width: 10),
                       imageBox('assets/cat.jpg'),
                       imageBox('assets/dog.jpg'),
                       imageBox('assets/hen.jpg'),
@@ -100,7 +112,6 @@ class _AddPetPageState extends State<AddPetPage> {
                   alignment: Alignment.centerRight,
                   child: OutlinedButton(
                     onPressed: () {
-                      // Your submit logic here
                       final type = selectedType;
                       final category = selectedCategory;
                       final desc = descriptionController.text.trim();
@@ -113,7 +124,7 @@ class _AddPetPageState extends State<AddPetPage> {
                         return;
                       }
 
-                      // Process form data here (upload, save, etc.)
+                      // Submit logic here
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Pet submitted successfully!')),
                       );
@@ -132,11 +143,17 @@ class _AddPetPageState extends State<AddPetPage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: 2,
+        currentIndex: _currentIndex,
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.black,
         showSelectedLabels: false,
         showUnselectedLabels: false,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+            // Handle navigation if needed
+          });
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: ''),
@@ -152,9 +169,10 @@ class _AddPetPageState extends State<AddPetPage> {
     return Container(
       width: 100,
       height: 100,
-      margin: const EdgeInsets.only(right: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade200,
         image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
       ),
     );
@@ -181,7 +199,7 @@ class _AddPetPageState extends State<AddPetPage> {
       controller: controller,
       keyboardType: inputType,
       decoration: InputDecoration(
-        hintText: 'Enter $hint',
+        hintText: 'Choose a ${hint.toLowerCase()}',
         filled: true,
         fillColor: Colors.grey.shade200,
         border: InputBorder.none,

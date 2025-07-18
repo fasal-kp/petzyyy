@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:petzyyy/screens/adding.dart';
 import 'Chat.dart';
+import 'notification.dart';
+import 'category_section.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,10 +16,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onTabTapped(int index) {
     if (index == 1) {
-      // Navigate to ChatPage
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ChatPage()),
+      );
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddPetPage()),
+      );
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const NotificationPage()),
       );
     } else {
       setState(() {
@@ -53,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           _buildHeader(),
-          _buildCategorySection(),
+          const CategorySection(), // ✅ USE NEW WIDGET
           _buildPetTypeSection(),
           _buildBrandSection(),
           _buildProductGrid(),
@@ -62,7 +74,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
   Widget _buildHeader() {
     return Container(
@@ -124,114 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategorySection() {
-    final categoriesLine1 = [
-      'All Products',
-      'Pellet/Grass Feed',
-      'Candy',
-      'Milk Products',
-      'Take care of Animals',
-      'Parasite control',
-      'Bathroom cat sand'
-    ];
-    final categoriesLine2 = [
-      'Training toys',
-      'Equipment for providing food',
-      'Leash collar',
-      'Cloth Fashion',
-      'Beauty equipments',
-      'Fist Aid',
-      'Medicine'
-    ];
-
-    final imagePaths = {
-      'All Products': 'assets/Group 427321075.png',
-      'Pellet/Grass Feed': 'assets/Group 427321079.png',
-      'Candy': 'assets/Group 427321078.png',
-      'Milk Products': 'assets/Group 427321080.png',
-      'Take care of Animals': 'assets/Take.png',
-      'Parasite control': 'assets/Parasite.png',
-      'Bathroom cat sand': 'assets/Bathroom.png',
-      'Training toys': 'assets/Training.png',
-      'Equipment for providing food': 'assets/Equipment.png',
-      'Leash collar': 'assets/Leash.png',
-      'Cloth Fashion': 'assets/Cloth.png',
-      'Beauty equipments': 'assets/Beauty.png',
-      'Fist Aid': 'assets/First.png',
-      'Medicine': 'assets/Medicine.png',
-    };
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionTitleWithImage("Product Category", "assets/Vector.png"),
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: categoriesLine1.length,
-            itemBuilder: (context, index) {
-              final category = categoriesLine1[index];
-              final imagePath = imagePaths[category];
-              return _buildCategoryItem(imagePath: imagePath, label: category);
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: categoriesLine2.length,
-            itemBuilder: (context, index) {
-              final category = categoriesLine2[index];
-              final imagePath = imagePaths[category];
-              return _buildCategoryItem(imagePath: imagePath, label: category);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryItem({required String? imagePath, required String label}) {
-    return Container(
-      width: 80,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (imagePath != null)
-            Container(
-              height: 60,
-              width: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.asset(imagePath, fit: BoxFit.contain),
-              ),
-            )
-          else
-            const CircleAvatar(backgroundColor: Colors.orange, radius: 30),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPetTypeSection() {
     final petTypes = {
       'Cat': 'assets/cat.png',
@@ -247,7 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitleWithImage("Products according to pet type", "assets/Vector.png"),
+        _sectionTitleWithImage(
+            "Products according to pet type", "assets/Vector.png"),
         const SizedBox(height: 8),
         SizedBox(
           height: 100,
@@ -270,7 +174,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
-                        boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 5)],
+                        boxShadow: [
+                          BoxShadow(color: Colors.grey.shade300, blurRadius: 5)
+                        ],
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -316,148 +222,136 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
- Widget _buildProductGrid() {
-  final productImages = [
-    'assets/royalcanin2.png',
-    'assets/333royal.png',
-    'assets/royal canin.png',
-    'assets/4royal.png',
-    'assets/5royal.png',
-    'assets/6royal.png',
-    'assets/7royal.png',
-    'assets/8royal.png',
-    'assets/333royal.png',
-    'assets/royalcanin2.png',
-  ];
+  Widget _buildProductGrid() {
+    final productImages = [
+      'assets/royalcanin2.png',
+      'assets/333royal.png',
+      'assets/royal canin.png',
+      'assets/4royal.png',
+      'assets/5royal.png',
+      'assets/6royal.png',
+      'assets/7royal.png',
+      'assets/8royal.png',
+      'assets/333royal.png',
+      'assets/royalcanin2.png',
+    ];
 
-  return GridView.builder(
-    shrinkWrap: true,
-    padding: const EdgeInsets.all(16),
-    physics: const NeverScrollableScrollPhysics(),
-    itemCount: productImages.length,
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 2,
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      childAspectRatio: 0.65,
-    ),
-    itemBuilder: (context, index) {
-      return Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            // PetPaw Badge on Top Center
-          // PetPaw Badge with red background, image + text side-by-side
-Padding(
-  padding: const EdgeInsets.only(top: 8),
-  child: Container(
-    height: 30,
-    padding: const EdgeInsets.symmetric(horizontal: 8),
-    decoration: BoxDecoration(
-      color: Colors.red,
-      borderRadius: BorderRadius.circular(15),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Image.asset(
-          'assets/hhhh.png',
-          height: 12,
-          width: 12,
-          fit: BoxFit.contain,
-        ),
-        const SizedBox(width: 4),
-        const Text(
-          'PetPaw',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 10,
+    return GridView.builder(
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(16),
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: productImages.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 0.65,
+      ),
+      itemBuilder: (context, index) {
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ),
-      ],
-    ),
-  ),
-),
-
-            // Product Image
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Image.asset(
-                productImages[index],
-                height: 100,
-                width: 100,
-                fit: BoxFit.contain,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Brand
-            const Text(
-              "Royal Canin",
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 4),
-
-            // Product Name
-            const Text(
-              "INSTINCT POUCH GRAVY",
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 6),
-
-            // Price and Discount Row
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "299₹",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Container(
+                  height: 30,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      "-5%",
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/hhhh.png',
+                        height: 12,
+                        width: 12,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        'PetPaw',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Image.asset(
+                  productImages[index],
+                  height: 100,
+                  width: 100,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Royal Canin",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                "INSTINCT POUCH GRAVY",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "299₹",
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
+                        color: Colors.black,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        "-5%",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildFooter() {
     return Center(
@@ -518,11 +412,13 @@ Padding(
         children: [
           Image.asset(imagePath, height: 24, width: 24, fit: BoxFit.contain),
           const SizedBox(width: 8),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const Spacer(),
           const Text("View All", style: TextStyle(color: Colors.blue)),
         ],
       ),
     );
   }
-
+}
