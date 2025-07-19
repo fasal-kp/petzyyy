@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petzyyy/screens/adding.dart';
+import 'package:petzyyy/screens/profile.dart';
 import 'Chat.dart';
 import 'notification.dart';
 import 'category_section.dart';
@@ -29,6 +30,11 @@ class _HomeScreenState extends State<HomeScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const NotificationPage()),
+      );
+    } else if (index == 4) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
       );
     } else {
       setState(() {
