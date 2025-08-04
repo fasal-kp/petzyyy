@@ -1,55 +1,174 @@
 import 'package:flutter/material.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  int _currentIndex = 4;
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+
+    // Example navigation logic - replace with your real screens/routes
+    switch (index) {
+      case 0:
+        // Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage()));
+        break;
+      case 1:
+        // Navigator.push(context, MaterialPageRoute(builder: (_) => ChatPage()));
+        break;
+      case 2:
+        // Navigator.push(context, MaterialPageRoute(builder: (_) => AddPage()));
+        break;
+      case 3:
+        // Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationPage()));
+        break;
+      case 4:
+        // Already on ProfilePage
+        break;
+    }
+  }
+
+  void _handleTileTap(String title) {
+    // Implement specific navigation for each tile here
+    switch (title) {
+      case 'Profile':
+        // Navigator.push(...);
+        break;
+      case 'Help Center':
+        // Navigator.push(...);
+        break;
+      case 'Privacy Policy':
+        // Navigator.push(...);
+        break;
+      case 'Payment':
+        // Navigator.push(...);
+        break;
+      case 'Language':
+        _showLanguagePicker();
+        break;
+      case 'Categories':
+        // Navigator.push(...);
+        break;
+      case 'Settings':
+        // Navigator.push(...);
+        break;
+      case 'Logout':
+        // Add logout logic here
+        break;
+    }
+  }
+
+  void _showLanguagePicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) => Container(
+        padding: const EdgeInsets.all(20),
+        height: 200,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Select Language',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const Divider(),
+            ListTile(
+              title: const Text('English'),
+              onTap: () {
+                Navigator.pop(context);
+                // Set language logic here
+              },
+            ),
+            ListTile(
+              title: const Text('Hindi'),
+              onTap: () {
+                Navigator.pop(context);
+                // Set language logic here
+              },
+            ),
+            ListTile(
+              title: const Text('Other'),
+              onTap: () {
+                Navigator.pop(context);
+                // Set language logic here
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
-        ),
         title: const Text('Profile'),
-        backgroundColor: Colors.white,
         elevation: 0,
+        backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
       body: Column(
         children: [
-          const SizedBox(height: 20),
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: AssetImage('assets/profile.jpg'), // Replace with your image
+          const SizedBox(height: 30),
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              const CircleAvatar(
+                radius: 50,
+                backgroundImage: AssetImage('assets/profile.jpg'),
+              ),
+              Positioned(
+                child: GestureDetector(
+                  onTap: () {
+                    // Implement edit profile picture action
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           const Text(
             'Divya Sharma',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 4),
           const Text(
-            '+971 123456xxxx',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
-            ),
+            '+91 123456789',
+            style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
           const SizedBox(height: 30),
           Expanded(
             child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
-                buildListTile(Icons.person, 'Profile'),
+                buildListTile(Icons.person_outline, 'Profile'),
                 buildListTile(Icons.help_outline, 'Help Center'),
-                buildListTile(Icons.privacy_tip, 'Privacy Policy'),
-                buildListTile(Icons.payment, 'Payment'),
+                buildListTile(Icons.privacy_tip_outlined, 'Privacy Policy'),
+                buildListTile(Icons.payment_outlined, 'Payment'),
                 buildListTile(Icons.language, 'Language'),
-                buildListTile(Icons.category, 'Categories'),
-                buildListTile(Icons.settings, 'Settings'),
+                buildListTile(Icons.category_outlined, 'Categories'),
+                buildListTile(Icons.settings_outlined, 'Settings'),
                 buildListTile(Icons.logout, 'Logout'),
               ],
             ),
@@ -57,48 +176,40 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 4,
         type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.black54,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
         ],
       ),
     );
   }
 
   Widget buildListTile(IconData icon, String title) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.red.shade50,
-        child: Icon(
-          icon,
-          color: Colors.red,
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      elevation: 0,
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Colors.red.shade50,
+          child: Icon(icon, color: Colors.red),
         ),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 16),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: () => _handleTileTap(title),
       ),
-      title: Text(title),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {
-        // Add navigation logic here
-      },
     );
   }
 }

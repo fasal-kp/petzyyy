@@ -10,17 +10,23 @@ class AddPetPage extends StatefulWidget {
 }
 
 class _AddPetPageState extends State<AddPetPage> {
-  File? _image;
   final picker = ImagePicker();
+  final List<File> _images = [];
 
   Future<void> _chooseFile() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      }
-    });
+    if (pickedFile != null) {
+      setState(() {
+        if (_images.length < 3) {
+          _images.add(File(pickedFile.path));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('You can only select up to 3 images')),
+          );
+        }
+      });
+    }
   }
 
   String? selectedType;
@@ -71,20 +77,7 @@ class _AddPetPageState extends State<AddPetPage> {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      if (_image != null)
-                        Container(
-                          width: 100,
-                          height: 100,
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.grey.shade200,
-                            image: DecorationImage(
-                              image: FileImage(_image!),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
+                      ..._images.map((file) => imageFileBox(file)).toList(),
                       imageBox('assets/cat.jpg'),
                       imageBox('assets/dog.jpg'),
                       imageBox('assets/hen.jpg'),
@@ -117,9 +110,9 @@ class _AddPetPageState extends State<AddPetPage> {
                       final desc = descriptionController.text.trim();
                       final price = priceController.text.trim();
 
-                      if (_image == null || type == null || category == null || desc.isEmpty || price.isEmpty) {
+                      if (_images.isEmpty || type == null || category == null || desc.isEmpty || price.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please fill all fields and select an image')),
+                          const SnackBar(content: Text('Please fill all fields and select images')),
                         );
                         return;
                       }
@@ -161,6 +154,22 @@ class _AddPetPageState extends State<AddPetPage> {
           BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
         ],
+      ),
+    );
+  }
+
+  Widget imageFileBox(File file) {
+    return Container(
+      width: 100,
+      height: 100,
+      margin: const EdgeInsets.symmetric(horizontal: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade200,
+        image: DecorationImage(
+          image: FileImage(file),
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
