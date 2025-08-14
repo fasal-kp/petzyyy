@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:petzyyy/screens/phoneAuthScreen.dart'; // your login screen
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -36,33 +38,37 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _handleTileTap(String title) {
-    // Implement specific navigation for each tile here
     switch (title) {
       case 'Profile':
-        // Navigator.push(...);
         break;
       case 'Help Center':
-        // Navigator.push(...);
         break;
       case 'Privacy Policy':
-        // Navigator.push(...);
         break;
       case 'Payment':
-        // Navigator.push(...);
         break;
       case 'Language':
         _showLanguagePicker();
         break;
       case 'Categories':
-        // Navigator.push(...);
         break;
       case 'Settings':
-        // Navigator.push(...);
         break;
       case 'Logout':
-        // Add logout logic here
+        _logoutUser();
         break;
     }
+  }
+
+  Future<void> _logoutUser() async {
+    await FirebaseAuth.instance.signOut();
+
+    // Clear navigation stack so user can't go back
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   void _showLanguagePicker() {
@@ -83,21 +89,18 @@ class _ProfilePageState extends State<ProfilePage> {
               title: const Text('English'),
               onTap: () {
                 Navigator.pop(context);
-                // Set language logic here
               },
             ),
             ListTile(
               title: const Text('Hindi'),
               onTap: () {
                 Navigator.pop(context);
-                // Set language logic here
               },
             ),
             ListTile(
               title: const Text('Other'),
               onTap: () {
                 Navigator.pop(context);
-                // Set language logic here
               },
             ),
           ],
@@ -128,12 +131,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               Positioned(
                 child: GestureDetector(
-                  onTap: () {
-                    // Implement edit profile picture action
-                  },
+                  onTap: () {},
                   child: Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
                     ),
