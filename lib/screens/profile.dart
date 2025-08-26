@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petzyyy/screens/phoneAuthScreen.dart'; // your login screen
-import 'EditProfilePage.dart'; // import the edit profile screen
+import 'EditProfilePage.dart'; // edit profile screen
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -47,19 +47,30 @@ class _ProfilePageState extends State<ProfilePage> {
   void _handleTileTap(String title) {
     switch (title) {
       case 'Profile':
+        _openEditProfile();
         break;
       case 'Help Center':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const SimplePage(title: "Help Center")));
         break;
       case 'Privacy Policy':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const SimplePage(title: "Privacy Policy")));
         break;
       case 'Payment':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const SimplePage(title: "Payment")));
         break;
       case 'Language':
         _showLanguagePicker();
         break;
       case 'Categories':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const SimplePage(title: "Categories")));
         break;
       case 'Settings':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const SimplePage(title: "Settings")));
         break;
       case 'Logout':
         _logoutUser();
@@ -69,8 +80,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logoutUser() async {
     await FirebaseAuth.instance.signOut();
-
-    // Clear navigation stack so user can't go back
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -233,6 +242,29 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () => _handleTileTap(title),
+      ),
+    );
+  }
+}
+
+/// Simple placeholder page for other items
+class SimplePage extends StatelessWidget {
+  final String title;
+  const SimplePage({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Center(
+        child: Text(
+          '$title Page',
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
