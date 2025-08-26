@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddPetPage extends StatefulWidget {
   const AddPetPage({super.key});
@@ -38,6 +41,67 @@ class _AddPetPageState extends State<AddPetPage> {
   final categories = ['Food', 'Toy', 'Medicine'];
 
   int _currentIndex = 2; // highlight Add icon
+  bool _isLoading = false;
+
+  Future<void> _submitPet() async {
+    final type = selectedType;
+    final category = selectedCategory;
+    final desc = descriptionController.text.trim();
+    final price = priceController.text.trim();
+
+    if (_images.isEmpty || type == null || category == null || desc.isEmpty || price.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields and select images')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Upload images to Firebase Storage
+      List<String> imageUrls = [];
+      for (File image in _images) {
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('pets')
+            .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+        await ref.putFile(image);
+        String url = await ref.getDownloadURL();
+        imageUrls.add(url);
+      }
+
+      // Save details to Firestore
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? "guest";
+      await FirebaseFirestore.instance.collection('pets').add({
+        "type": type,
+        "category": category,
+        "description": desc,
+        "price": price,
+        "images": imageUrls,
+        "userId": userId,
+        "createdAt": FieldValue.serverTimestamp(),
+      });
+
+      setState(() {
+        _images.clear();
+        selectedType = null;
+        selectedCategory = null;
+        descriptionController.clear();
+        priceController.clear();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pet submitted successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +109,7 @@ class _AddPetPageState extends State<AddPetPage> {
       appBar: AppBar(
         backgroundColor: Colors.red,
         elevation: 0,
+        title: const Text("Add Pet"),
       ),
       body: SafeArea(
         child: Padding(
@@ -104,29 +169,18 @@ class _AddPetPageState extends State<AddPetPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: OutlinedButton(
-                    onPressed: () {
-                      final type = selectedType;
-                      final category = selectedCategory;
-                      final desc = descriptionController.text.trim();
-                      final price = priceController.text.trim();
-
-                      if (_images.isEmpty || type == null || category == null || desc.isEmpty || price.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please fill all fields and select images')),
-                        );
-                        return;
-                      }
-
-                      // Submit logic here
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Pet submitted successfully!')),
-                      );
-                    },
+                    onPressed: _isLoading ? null : _submitPet,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
                     ),
-                    child: const Text('Submit'),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
+                          )
+                        : const Text('Submit'),
                   ),
                 ),
               ],
@@ -208,7 +262,7 @@ class _AddPetPageState extends State<AddPetPage> {
       controller: controller,
       keyboardType: inputType,
       decoration: InputDecoration(
-        hintText: 'Choose a ${hint.toLowerCase()}',
+        hintText: 'Enter $hint',
         filled: true,
         fillColor: Colors.grey.shade200,
         border: InputBorder.none,

@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:petzyyy/screens/phoneAuthScreen.dart'; // your login screen
+import 'EditProfilePage.dart'; // import the edit profile screen
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,12 +15,16 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   int _currentIndex = 4;
 
+  String _name = "fasal";
+  String _phone = "+91 123456789";
+  File? _profileImage;
+
   void _onTabTapped(int index) {
     setState(() {
       _currentIndex = index;
     });
 
-    // Example navigation logic - replace with your real screens/routes
+    // Example navigation logic
     switch (index) {
       case 0:
         // Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage()));
@@ -87,26 +94,40 @@ class _ProfilePageState extends State<ProfilePage> {
             const Divider(),
             ListTile(
               title: const Text('English'),
-              onTap: () {
-                Navigator.pop(context);
-              },
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               title: const Text('Hindi'),
-              onTap: () {
-                Navigator.pop(context);
-              },
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               title: const Text('Other'),
-              onTap: () {
-                Navigator.pop(context);
-              },
+              onTap: () => Navigator.pop(context),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _openEditProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditProfilePage(
+          name: _name,
+          phone: _phone,
+          currentImage: _profileImage,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _name = result["name"];
+        _profileImage = result["image"];
+      });
+    }
   }
 
   @override
@@ -125,13 +146,15 @@ class _ProfilePageState extends State<ProfilePage> {
           Stack(
             alignment: Alignment.bottomRight,
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 50,
-                backgroundImage: AssetImage('assets/profile.jpg'),
+                backgroundImage: _profileImage != null
+                    ? FileImage(_profileImage!)
+                    : const AssetImage('assets/profile.jpg') as ImageProvider,
               ),
               Positioned(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: _openEditProfile,
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: const BoxDecoration(
@@ -149,14 +172,14 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Divya Sharma',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          Text(
+            _name,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
-          const Text(
-            '+91 123456789',
-            style: TextStyle(fontSize: 14, color: Colors.black54),
+          Text(
+            _phone,
+            style: const TextStyle(fontSize: 14, color: Colors.black54),
           ),
           const SizedBox(height: 30),
           Expanded(
