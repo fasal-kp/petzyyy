@@ -65,7 +65,7 @@ class _AddPetPageState extends State<AddPetPage> {
         final ref = FirebaseStorage.instance
             .ref()
             .child('pets')
-            .child('${DateTime.now().millisecondsSinceEpoch}_${FirebaseAuth.instance.currentUser?.uid}.jpg');
+            .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
         await ref.putFile(image);
         String url = await ref.getDownloadURL();
         imageUrls.add(url);
@@ -83,7 +83,6 @@ class _AddPetPageState extends State<AddPetPage> {
         "createdAt": FieldValue.serverTimestamp(),
       });
 
-      // Reset form
       setState(() {
         _images.clear();
         selectedType = null;
@@ -144,6 +143,9 @@ class _AddPetPageState extends State<AddPetPage> {
                     scrollDirection: Axis.horizontal,
                     children: [
                       ..._images.map((file) => imageFileBox(file)).toList(),
+                      imageBox('assets/cat.jpg'),
+                      imageBox('assets/dog.jpg'),
+                      imageBox('assets/hen.jpg'),
                     ],
                   ),
                 ),
@@ -196,7 +198,7 @@ class _AddPetPageState extends State<AddPetPage> {
         onTap: (index) {
           setState(() {
             _currentIndex = index;
-            // TODO: Navigate to pages if needed
+            // Handle navigation if needed
           });
         },
         items: const [
@@ -222,6 +224,19 @@ class _AddPetPageState extends State<AddPetPage> {
           image: FileImage(file),
           fit: BoxFit.cover,
         ),
+      ),
+    );
+  }
+
+  Widget imageBox(String path) {
+    return Container(
+      width: 100,
+      height: 100,
+      margin: const EdgeInsets.symmetric(horizontal: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade200,
+        image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
       ),
     );
   }
