@@ -65,7 +65,8 @@ class _AddPetPageState extends State<AddPetPage> {
         final ref = FirebaseStorage.instance
             .ref()
             .child('pets')
-            .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+            .child('${DateTime.now().millisecondsSinceEpoch}_${FirebaseAuth.instance.currentUser?.uid}.jpg');
+
         await ref.putFile(image);
         String url = await ref.getDownloadURL();
         imageUrls.add(url);
@@ -73,16 +74,18 @@ class _AddPetPageState extends State<AddPetPage> {
 
       // Save details to Firestore
       final userId = FirebaseAuth.instance.currentUser?.uid ?? "guest";
+
       await FirebaseFirestore.instance.collection('pets').add({
         "type": type,
         "category": category,
         "description": desc,
-        "price": price,
+        "price": double.tryParse(price) ?? 0, // store as number
         "images": imageUrls,
         "userId": userId,
         "createdAt": FieldValue.serverTimestamp(),
       });
 
+      // Clear after success
       setState(() {
         _images.clear();
         selectedType = null;
@@ -92,11 +95,11 @@ class _AddPetPageState extends State<AddPetPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pet submitted successfully!')),
+        const SnackBar(content: Text('✅ Pet submitted successfully!')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('❌ Error: $e')),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -143,9 +146,6 @@ class _AddPetPageState extends State<AddPetPage> {
                     scrollDirection: Axis.horizontal,
                     children: [
                       ..._images.map((file) => imageFileBox(file)).toList(),
-                      imageBox('assets/cat.jpg'),
-                      imageBox('assets/dog.jpg'),
-                      imageBox('assets/hen.jpg'),
                     ],
                   ),
                 ),
@@ -198,7 +198,7 @@ class _AddPetPageState extends State<AddPetPage> {
         onTap: (index) {
           setState(() {
             _currentIndex = index;
-            // Handle navigation if needed
+            // TODO: navigate to other pages
           });
         },
         items: const [
@@ -224,19 +224,6 @@ class _AddPetPageState extends State<AddPetPage> {
           image: FileImage(file),
           fit: BoxFit.cover,
         ),
-      ),
-    );
-  }
-
-  Widget imageBox(String path) {
-    return Container(
-      width: 100,
-      height: 100,
-      margin: const EdgeInsets.symmetric(horizontal: 5),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey.shade200,
-        image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
       ),
     );
   }
