@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
 
 class AddPetPage extends StatefulWidget {
   const AddPetPage({super.key});
@@ -61,68 +62,68 @@ class _AddPetPageState extends State<AddPetPage> with SingleTickerProviderStateM
     }
   }
 
-  Future<void> _submitPet() async {
-    final type = selectedType;
-    final category = selectedCategory;
-    final desc = descriptionController.text.trim();
-    final price = priceController.text.trim();
+Future<void> _submitPet() async {
+  final type = selectedType;
+  final category = selectedCategory;
+  final desc = descriptionController.text.trim();
+  final price = priceController.text.trim();
 
-    if (_images.isEmpty || type == null || category == null || desc.isEmpty || price.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields and select images')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      // Upload images to Firebase Storage
-      List<String> imageUrls = [];
-      for (File image in _images) {
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('pets')
-            .child('${DateTime.now().millisecondsSinceEpoch}_${FirebaseAuth.instance.currentUser?.uid}.jpg');
-
-        await ref.putFile(image);
-        String url = await ref.getDownloadURL();
-        imageUrls.add(url);
-      }
-
-      // Save details to Firestore
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? "guest";
-
-      await FirebaseFirestore.instance.collection('pets').add({
-        "type": type,
-        "category": category,
-        "description": desc,
-        "price": double.tryParse(price) ?? 0,
-        "images": imageUrls,
-        "userId": userId,
-        "createdAt": FieldValue.serverTimestamp(),
-      });
-
-      // Clear after success
-      setState(() {
-        _images.clear();
-        selectedType = null;
-        selectedCategory = null;
-        descriptionController.clear();
-        priceController.clear();
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Pet submitted successfully!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Error: $e')),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+  if (_images.isEmpty || type == null || category == null || desc.isEmpty || price.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please fill all fields and select images')),
+    );
+    return;
   }
+
+  setState(() => _isLoading = true);
+
+  try {
+    List<String> imageUrls = [];
+    for (File image in _images) {
+      final id = const Uuid().v4();
+      final ref = FirebaseStorage.instance.ref().child('pets').child('$id.jpg');
+      await ref.putFile(image);
+      final url = await ref.getDownloadURL();
+      imageUrls.add(url);
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    final docRef = FirebaseFirestore.instance.collection('pets').doc();
+
+    await docRef.set({
+      "id": docRef.id,
+      "type": type,
+      "category": category,
+      "description": desc,
+      "price": double.tryParse(price) ?? 0,
+      "images": imageUrls,
+      "userId": user?.uid,
+      "createdAt": FieldValue.serverTimestamp(),
+      "status": "active",   // like OLX posts
+    });
+
+    // clear
+    setState(() {
+      _images.clear();
+      selectedType = null;
+      selectedCategory = null;
+      descriptionController.clear();
+      priceController.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('✅ Pet submitted successfully!')),
+    );
+  } catch (e) {
+    print("ERROR: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('❌ Error: $e')),
+    );
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
+
 
   // 🔹 Reusable animation builder
   Widget animatedItem({required int index, required Widget child}) {
