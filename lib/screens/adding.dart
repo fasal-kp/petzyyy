@@ -12,9 +12,38 @@ class AddPetPage extends StatefulWidget {
   State<AddPetPage> createState() => _AddPetPageState();
 }
 
-class _AddPetPageState extends State<AddPetPage> {
+class _AddPetPageState extends State<AddPetPage> with SingleTickerProviderStateMixin {
   final picker = ImagePicker();
   final List<File> _images = [];
+
+  String? selectedType;
+  String? selectedCategory;
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+
+  final types = ['Cat', 'Dog', 'Bird'];
+  final categories = ['Food', 'Toy', 'Medicine'];
+
+  int _currentIndex = 2; // highlight Add icon
+  bool _isLoading = false;
+
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   Future<void> _chooseFile() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -31,17 +60,6 @@ class _AddPetPageState extends State<AddPetPage> {
       });
     }
   }
-
-  String? selectedType;
-  String? selectedCategory;
-  final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
-
-  final types = ['Cat', 'Dog', 'Bird'];
-  final categories = ['Food', 'Toy', 'Medicine'];
-
-  int _currentIndex = 2; // highlight Add icon
-  bool _isLoading = false;
 
   Future<void> _submitPet() async {
     final type = selectedType;
@@ -79,7 +97,7 @@ class _AddPetPageState extends State<AddPetPage> {
         "type": type,
         "category": category,
         "description": desc,
-        "price": double.tryParse(price) ?? 0, // store as number
+        "price": double.tryParse(price) ?? 0,
         "images": imageUrls,
         "userId": userId,
         "createdAt": FieldValue.serverTimestamp(),
@@ -106,6 +124,28 @@ class _AddPetPageState extends State<AddPetPage> {
     }
   }
 
+  // 🔹 Reusable animation builder
+  Widget animatedItem({required int index, required Widget child}) {
+    final intervalStart = index * 0.1;
+    final intervalEnd = intervalStart + 0.5;
+
+    final animation = CurvedAnimation(
+      parent: _controller,
+      curve: Interval(intervalStart, intervalEnd, curve: Curves.easeOut),
+    );
+
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.2),
+          end: Offset.zero,
+        ).animate(animation),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,66 +161,87 @@ class _AddPetPageState extends State<AddPetPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: _chooseFile,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.camera_alt_outlined),
-                        SizedBox(width: 8),
-                        Text('Choose a file'),
-                      ],
+                animatedItem(
+                  index: 0,
+                  child: GestureDetector(
+                    onTap: _chooseFile,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.camera_alt_outlined),
+                          SizedBox(width: 8),
+                          Text('Choose a file'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  height: 100,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      ..._images.map((file) => imageFileBox(file)).toList(),
-                    ],
+                animatedItem(
+                  index: 1,
+                  child: SizedBox(
+                    height: 100,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        ..._images.map((file) => imageFileBox(file)).toList(),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                buildDropdown('Type', types, selectedType, (val) {
-                  setState(() => selectedType = val);
-                }),
+                animatedItem(
+                  index: 2,
+                  child: buildDropdown('Type', types, selectedType, (val) {
+                    setState(() => selectedType = val);
+                  }),
+                ),
                 const SizedBox(height: 12),
-                buildDropdown('Category', categories, selectedCategory, (val) {
-                  setState(() => selectedCategory = val);
-                }),
+                animatedItem(
+                  index: 3,
+                  child: buildDropdown('Category', categories, selectedCategory, (val) {
+                    setState(() => selectedCategory = val);
+                  }),
+                ),
                 const SizedBox(height: 12),
-                buildTextField('Description', descriptionController),
+                animatedItem(
+                  index: 4,
+                  child: buildTextField('Description', descriptionController),
+                ),
                 const SizedBox(height: 12),
-                buildTextField(
-                  'Price',
-                  priceController,
-                  inputType: TextInputType.number,
+                animatedItem(
+                  index: 5,
+                  child: buildTextField(
+                    'Price',
+                    priceController,
+                    inputType: TextInputType.number,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: OutlinedButton(
-                    onPressed: _isLoading ? null : _submitPet,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
+                animatedItem(
+                  index: 6,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton(
+                      onPressed: _isLoading ? null : _submitPet,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
+                            )
+                          : const Text('Submit'),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
-                          )
-                        : const Text('Submit'),
                   ),
                 ),
               ],
