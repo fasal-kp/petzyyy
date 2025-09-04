@@ -13,7 +13,8 @@ class AddPetPage extends StatefulWidget {
   State<AddPetPage> createState() => _AddPetPageState();
 }
 
-class _AddPetPageState extends State<AddPetPage> with SingleTickerProviderStateMixin {
+class _AddPetPageState extends State<AddPetPage>
+    with SingleTickerProviderStateMixin {
   final picker = ImagePicker();
   final List<File> _images = [];
 
@@ -43,9 +44,12 @@ class _AddPetPageState extends State<AddPetPage> with SingleTickerProviderStateM
   @override
   void dispose() {
     _controller.dispose();
+    descriptionController.dispose();
+    priceController.dispose();
     super.dispose();
   }
 
+  /// Pick image
   Future<void> _chooseFile() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
@@ -62,70 +66,88 @@ class _AddPetPageState extends State<AddPetPage> with SingleTickerProviderStateM
     }
   }
 
-Future<void> _submitPet() async {
-  final type = selectedType;
-  final category = selectedCategory;
-  final desc = descriptionController.text.trim();
-  final price = priceController.text.trim();
+  /// Upload pet
+  Future<void> _submitPet() async {
+    final type = selectedType;
+    final category = selectedCategory;
+    final desc = descriptionController.text.trim();
+    final price = priceController.text.trim();
 
-  if (_images.isEmpty || type == null || category == null || desc.isEmpty || price.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please fill all fields and select images')),
-    );
-    return;
-  }
-
-  setState(() => _isLoading = true);
-
-  try {
-    List<String> imageUrls = [];
-    for (File image in _images) {
-      final id = const Uuid().v4();
-      final ref = FirebaseStorage.instance.ref().child('pets').child('$id.jpg');
-      await ref.putFile(image);
-      final url = await ref.getDownloadURL();
-      imageUrls.add(url);
+    if (_images.isEmpty ||
+        type == null ||
+        category == null ||
+        desc.isEmpty ||
+        price.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('⚠️ Please fill all fields and select images')),
+      );
+      return;
     }
 
     final user = FirebaseAuth.instance.currentUser;
-    final docRef = FirebaseFirestore.instance.collection('pets').doc();
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('⚠️ You must be logged in to add pets')),
+      );
+      return;
+    }
 
-    await docRef.set({
-      "id": docRef.id,
-      "type": type,
-      "category": category,
-      "description": desc,
-      "price": double.tryParse(price) ?? 0,
-      "images": imageUrls,
-      "userId": user?.uid,
-      "createdAt": FieldValue.serverTimestamp(),
-      "status": "active",   // like OLX posts
-    });
+    setState(() => _isLoading = true);
 
-    // clear
-    setState(() {
-      _images.clear();
-      selectedType = null;
-      selectedCategory = null;
-      descriptionController.clear();
-      priceController.clear();
-    });
+    try {
+      /// Upload images
+      List<String> imageUrls = [];
+      for (File image in _images) {
+        final id = const Uuid().v4();
+        final ref =
+            FirebaseStorage.instance.ref().child('pets').child('$id.jpg');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('✅ Pet submitted successfully!')),
-    );
-  } catch (e) {
-    print("ERROR: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('❌ Error: $e')),
-    );
-  } finally {
-    setState(() => _isLoading = false);
+        /// Upload file
+        await ref.putFile(image);
+
+        /// Get URL
+        final url = await ref.getDownloadURL();
+        imageUrls.add(url);
+      }
+
+      /// Save pet details
+      final docRef = FirebaseFirestore.instance.collection('pets').doc();
+
+      await docRef.set({
+        "id": docRef.id,
+        "type": type,
+        "category": category,
+        "description": desc,
+        "price": double.tryParse(price) ?? 0,
+        "images": imageUrls,
+        "userId": user.uid,
+        "createdAt": FieldValue.serverTimestamp(),
+        "status": "active",
+      });
+
+      /// Clear form
+      setState(() {
+        _images.clear();
+        selectedType = null;
+        selectedCategory = null;
+        descriptionController.clear();
+        priceController.clear();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Pet submitted successfully!')),
+      );
+    } catch (e) {
+      debugPrint("Upload ERROR: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ Error: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
-}
 
-
-  // 🔹 Reusable animation builder
+  /// Animation wrapper
   Widget animatedItem({required int index, required Widget child}) {
     final intervalStart = index * 0.1;
     final intervalEnd = intervalStart + 0.5;
@@ -162,19 +184,21 @@ Future<void> _submitPet() async {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                /// Image picker button
                 animatedItem(
                   index: 0,
                   child: GestureDetector(
                     onTap: _chooseFile,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 12),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Icon(Icons.camera_alt_outlined),
                           SizedBox(width: 8),
                           Text('Choose a file'),
@@ -184,6 +208,8 @@ Future<void> _submitPet() async {
                   ),
                 ),
                 const SizedBox(height: 10),
+
+                /// Show selected images
                 animatedItem(
                   index: 1,
                   child: SizedBox(
@@ -197,6 +223,8 @@ Future<void> _submitPet() async {
                   ),
                 ),
                 const SizedBox(height: 20),
+
+                /// Type dropdown
                 animatedItem(
                   index: 2,
                   child: buildDropdown('Type', types, selectedType, (val) {
@@ -204,18 +232,25 @@ Future<void> _submitPet() async {
                   }),
                 ),
                 const SizedBox(height: 12),
+
+                /// Category dropdown
                 animatedItem(
                   index: 3,
-                  child: buildDropdown('Category', categories, selectedCategory, (val) {
+                  child: buildDropdown(
+                      'Category', categories, selectedCategory, (val) {
                     setState(() => selectedCategory = val);
                   }),
                 ),
                 const SizedBox(height: 12),
+
+                /// Description
                 animatedItem(
                   index: 4,
                   child: buildTextField('Description', descriptionController),
                 ),
                 const SizedBox(height: 12),
+
+                /// Price
                 animatedItem(
                   index: 5,
                   child: buildTextField(
@@ -225,6 +260,8 @@ Future<void> _submitPet() async {
                   ),
                 ),
                 const SizedBox(height: 20),
+
+                /// Submit button
                 animatedItem(
                   index: 6,
                   child: Align(
@@ -239,7 +276,8 @@ Future<void> _submitPet() async {
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.red),
                             )
                           : const Text('Submit'),
                     ),
@@ -250,6 +288,8 @@ Future<void> _submitPet() async {
           ),
         ),
       ),
+
+      /// Bottom nav
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
@@ -258,22 +298,23 @@ Future<void> _submitPet() async {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-            // TODO: navigate to other pages
-          });
+          setState(() => _currentIndex = index);
+          // TODO: add navigation routes
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.notifications_none), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
         ],
       ),
     );
   }
 
+  /// Show image
   Widget imageFileBox(File file) {
     return Container(
       width: 100,
@@ -290,7 +331,9 @@ Future<void> _submitPet() async {
     );
   }
 
-  Widget buildDropdown(String hint, List<String> items, String? value, Function(String?) onChanged) {
+  /// Dropdown widget
+  Widget buildDropdown(String hint, List<String> items, String? value,
+      Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
         hintText: 'Choose a ${hint.toLowerCase()}',
@@ -306,7 +349,9 @@ Future<void> _submitPet() async {
     );
   }
 
-  Widget buildTextField(String hint, TextEditingController controller, {TextInputType inputType = TextInputType.text}) {
+  /// Text field widget
+  Widget buildTextField(String hint, TextEditingController controller,
+      {TextInputType inputType = TextInputType.text}) {
     return TextField(
       controller: controller,
       keyboardType: inputType,
