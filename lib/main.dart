@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:petzyyy/screens/Home.dart';
 import 'package:petzyyy/screens/chatScreen.dart';
 import 'package:petzyyy/screens/adding.dart';
-import 'package:petzyyy/screens/phoneAuthScreen.dart';
+import 'package:petzyyy/screens/phone_auth_screen.dart';
 import 'package:petzyyy/screens/profile.dart';
 import 'package:pinput/pinput.dart';
 import 'package:get/get.dart';

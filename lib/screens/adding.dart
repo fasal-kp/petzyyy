@@ -29,7 +29,7 @@ class _AddPetPageState extends State<AddPetPage>
   int _currentIndex = 2; // highlight Add icon
   bool _isLoading = false;
 
-  late AnimationController _controller;
+  late final AnimationController _controller;
 
   @override
   void initState() {
@@ -37,8 +37,7 @@ class _AddPetPageState extends State<AddPetPage>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
-    );
-    _controller.forward();
+    )..forward();
   }
 
   @override
@@ -52,7 +51,6 @@ class _AddPetPageState extends State<AddPetPage>
   /// Pick image
   Future<void> _chooseFile() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
       setState(() {
         if (_images.length < 3) {
@@ -68,6 +66,20 @@ class _AddPetPageState extends State<AddPetPage>
 
   /// Upload pet
   Future<void> _submitPet() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    // ✅ Check login status (fixes your throwing line)
+    if (user == null) {
+      if (!mounted) return; // safety for async contexts
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          // 👇 correct lambda: '=>' with no space in between
+          builder: (context) => const PhoneAuthScreen(),
+        ),
+      );
+      return;
+    }
+
     final type = selectedType;
     final category = selectedCategory;
     final desc = descriptionController.text.trim();
@@ -79,15 +91,9 @@ class _AddPetPageState extends State<AddPetPage>
         desc.isEmpty ||
         price.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Please fill all fields and select images')),
-      );
-      return;
-    }
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ You must be logged in to add pets')),
+        const SnackBar(
+          content: Text('⚠️ Please fill all fields and select images'),
+        ),
       );
       return;
     }
@@ -96,33 +102,27 @@ class _AddPetPageState extends State<AddPetPage>
 
     try {
       /// Upload images
-      List<String> imageUrls = [];
-      for (File image in _images) {
+      final List<String> imageUrls = [];
+      for (final image in _images) {
         final id = const Uuid().v4();
-        final ref =
-            FirebaseStorage.instance.ref().child('pets').child('$id.jpg');
-
-        /// Upload file
+        final ref = FirebaseStorage.instance.ref().child('pets/$id.jpg');
         await ref.putFile(image);
-
-        /// Get URL
         final url = await ref.getDownloadURL();
         imageUrls.add(url);
       }
 
       /// Save pet details
       final docRef = FirebaseFirestore.instance.collection('pets').doc();
-
       await docRef.set({
-        "id": docRef.id,
-        "type": type,
-        "category": category,
-        "description": desc,
-        "price": double.tryParse(price) ?? 0,
-        "images": imageUrls,
-        "userId": user.uid,
-        "createdAt": FieldValue.serverTimestamp(),
-        "status": "active",
+        'id': docRef.id,
+        'type': type,
+        'category': category,
+        'description': desc,
+        'price': double.tryParse(price) ?? 0,
+        'images': imageUrls,
+        'userId': user.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'active',
       });
 
       /// Clear form
@@ -134,16 +134,20 @@ class _AddPetPageState extends State<AddPetPage>
         priceController.clear();
       });
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Pet submitted successfully!')),
       );
     } catch (e) {
-      debugPrint("Upload ERROR: $e");
+      debugPrint('Upload ERROR: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('❌ Error: $e')),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -175,7 +179,7 @@ class _AddPetPageState extends State<AddPetPage>
       appBar: AppBar(
         backgroundColor: Colors.red,
         elevation: 0,
-        title: const Text("Add Pet"),
+        title: const Text('Add Pet'),
       ),
       body: SafeArea(
         child: Padding(
@@ -191,7 +195,9 @@ class _AddPetPageState extends State<AddPetPage>
                     onTap: _chooseFile,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 12),
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(10),
@@ -216,9 +222,7 @@ class _AddPetPageState extends State<AddPetPage>
                     height: 100,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: [
-                        ..._images.map((file) => imageFileBox(file)).toList(),
-                      ],
+                      children: _images.map((f) => imageFileBox(f)).toList(),
                     ),
                   ),
                 ),
@@ -237,16 +241,21 @@ class _AddPetPageState extends State<AddPetPage>
                 animatedItem(
                   index: 3,
                   child: buildDropdown(
-                      'Category', categories, selectedCategory, (val) {
-                    setState(() => selectedCategory = val);
-                  }),
+                    'Category',
+                    categories,
+                    selectedCategory,
+                    (val) {
+                      setState(() => selectedCategory = val);
+                    },
+                  ),
                 ),
                 const SizedBox(height: 12),
 
                 /// Description
                 animatedItem(
                   index: 4,
-                  child: buildTextField('Description', descriptionController),
+                  child:
+                      buildTextField('Description', descriptionController),
                 ),
                 const SizedBox(height: 12),
 
@@ -276,8 +285,7 @@ class _AddPetPageState extends State<AddPetPage>
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.red),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Text('Submit'),
                     ),
@@ -332,8 +340,12 @@ class _AddPetPageState extends State<AddPetPage>
   }
 
   /// Dropdown widget
-  Widget buildDropdown(String hint, List<String> items, String? value,
-      Function(String?) onChanged) {
+  Widget buildDropdown(
+    String hint,
+    List<String> items,
+    String? value,
+    Function(String?) onChanged,
+  ) {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
         hintText: 'Choose a ${hint.toLowerCase()}',
@@ -343,15 +355,18 @@ class _AddPetPageState extends State<AddPetPage>
       ),
       value: value,
       onChanged: onChanged,
-      items: items.map((String item) {
-        return DropdownMenuItem(value: item, child: Text(item));
-      }).toList(),
+      items: items
+          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+          .toList(),
     );
   }
 
   /// Text field widget
-  Widget buildTextField(String hint, TextEditingController controller,
-      {TextInputType inputType = TextInputType.text}) {
+  Widget buildTextField(
+    String hint,
+    TextEditingController controller, {
+    TextInputType inputType = TextInputType.text,
+  }) {
     return TextField(
       controller: controller,
       keyboardType: inputType,
@@ -360,6 +375,32 @@ class _AddPetPageState extends State<AddPetPage>
         filled: true,
         fillColor: Colors.grey.shade200,
         border: InputBorder.none,
+      ),
+    );
+  }
+}
+
+/// ---------------------------------------------------------------------------
+/// Minimal PhoneAuthScreen so navigation compiles.
+/// If you already have a proper OTP flow, delete this widget and keep yours.
+/// ---------------------------------------------------------------------------
+class PhoneAuthScreen extends StatelessWidget {
+  const PhoneAuthScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Phone Auth')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            // Simulate successful login for demo
+            // In your real screen, complete OTP then pop back or push home.
+            // After login, you might want to Navigator.pop or pushReplacement.
+            Navigator.of(context).pop(); // go back to AddPetPage
+          },
+          child: const Text('Simulate Login Success'),
+        ),
       ),
     );
   }

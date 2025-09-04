@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:petzyyy/screens/phoneAuthScreen.dart'; // your login screen
+import 'package:petzyyy/screens/phone_auth_screen.dart'; // your login screen
 import 'EditProfilePage.dart'; // edit profile screen
 
 class ProfilePage extends StatefulWidget {

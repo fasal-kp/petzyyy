@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:petzyyy/screens/OTPscreen.dart';
-import 'package:get/get.dart';
-import 'package:firebase_core/firebase_core.dart';
-
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,11 +13,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController phoneController = TextEditingController();
   bool isLoading = false;
 
-  void sendOTP() async {
+  /// Send OTP
+  Future<void> sendOTP() async {
     String phone = phoneController.text.trim();
+
     if (phone.isEmpty || phone.length < 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("📱 Enter a valid phone number")),
+        const SnackBar(content: Text("📱 Please enter a valid phone number")),
       );
       return;
     }
@@ -31,35 +29,46 @@ class _LoginScreenState extends State<LoginScreen> {
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: '+91$phone',
       timeout: const Duration(seconds: 60),
+
+      /// Auto verification (rarely works in India but keep it enabled)
       verificationCompleted: (PhoneAuthCredential credential) async {
-        // Optional: Automatic login
         try {
           await FirebaseAuth.instance.signInWithCredential(credential);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("✅ Auto verification complete")),
-          );
-          // TODO: Navigate to home
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("✅ Phone number verified")),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const OTPScreen(verificationId: "")),
+            );
+          }
         } catch (e) {
-          print("Auto verification error: $e");
+          debugPrint("Auto verification error: $e");
         }
       },
+
+      /// Failed
       verificationFailed: (FirebaseAuthException e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("❌ ${e.message}")),
         );
         setState(() => isLoading = false);
       },
+
+      /// OTP sent
       codeSent: (String verificationId, int? resendToken) {
         setState(() => isLoading = false);
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OTPScreen(verificationId: verificationId),
+            builder: (_) => OTPScreen(verificationId: verificationId),
           ),
         );
       },
+
       codeAutoRetrievalTimeout: (String verificationId) {
-        print("⚠️ Auto-retrieval timeout");
+        debugPrint("⚠️ Auto retrieval timeout: $verificationId");
       },
     );
   }
@@ -72,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Top illustration
+              /// Top illustration
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(top: 60, bottom: 30),
@@ -80,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: Color(0xFFFFF1C1),
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(100),
-                    bottomRight: Radius.circular(100)
+                    bottomRight: Radius.circular(100),
                   ),
                 ),
                 child: Center(
@@ -99,19 +108,22 @@ class _LoginScreenState extends State<LoginScreen> {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                 child: Text(
-                  "with more adoptable pets than ever, we have an urgent need for pet adopters.",
+                  "With more adoptable pets than ever, we have an urgent need for pet adopters.",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
 
-              // Phone number input
+              /// Phone number input
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                 child: TextField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
+                  maxLength: 10,
                   decoration: InputDecoration(
+                    counterText: "",
                     prefixText: "+91 ",
                     hintText: "Enter phone number",
                     prefixIcon: const Icon(Icons.phone),
@@ -122,8 +134,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
+              /// Send OTP button
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 50),
@@ -131,8 +145,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   onPressed: isLoading ? null : sendOTP,
                   child: isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text("Send OTP", style: TextStyle(color: Colors.black)),
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.red,
+                          ),
+                        )
+                      : const Text(
+                          "Send OTP",
+                          style: TextStyle(color: Colors.black),
+                        ),
                 ),
               ),
             ],
@@ -141,4 +165,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-} 
+}
