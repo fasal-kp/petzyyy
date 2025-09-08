@@ -15,6 +15,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
+  // 🛒 Simple in-memory cart list
+  List<String> cartItems = [];
+
   void _onTabTapped(int index) {
     if (index == 1) {
       Navigator.push(
@@ -41,6 +44,24 @@ class _HomeScreenState extends State<HomeScreen> {
         _currentIndex = index;
       });
     }
+  }
+
+  void _addToCart(String product) {
+    setState(() {
+      cartItems.add(product);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("$product added to cart")),
+    );
+  }
+
+  void _openCartPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CartPage(cartItems: cartItems),
+      ),
+    );
   }
 
   @override
@@ -71,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           _buildHeader(),
-          const CategorySection(), // ✅ USE NEW WIDGET
+          const CategorySection(),
           _buildPetTypeSection(),
           _buildBrandSection(),
           _buildProductGrid(),
@@ -111,7 +132,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.shopping_cart, color: Colors.white),
+              // 🛒 Cart Icon with Badge
+              Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                    onPressed: _openCartPage,
+                  ),
+                  if (cartItems.isNotEmpty)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          cartItems.length.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -234,12 +282,6 @@ class _HomeScreenState extends State<HomeScreen> {
       'assets/333royal.png',
       'assets/royal canin.png',
       'assets/4royal.png',
-      'assets/5royal.png',
-      'assets/6royal.png',
-      'assets/7royal.png',
-      'assets/8royal.png',
-      'assets/333royal.png',
-      'assets/royalcanin2.png',
     ];
 
     return GridView.builder(
@@ -251,9 +293,10 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisCount: 2,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: 0.65,
+        childAspectRatio: 0.7,
       ),
       itemBuilder: (context, index) {
+        final productName = "Royal Canin ${index + 1}";
         return Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
@@ -262,96 +305,31 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Container(
-                  height: 30,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        'assets/hhhh.png',
-                        height: 12,
-                        width: 12,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        'PetPaw',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.all(8),
                 child: Image.asset(
                   productImages[index],
                   height: 100,
-                  width: 100,
                   fit: BoxFit.contain,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                "Royal Canin",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-                textAlign: TextAlign.center,
+              Text(
+                productName,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
-              const SizedBox(height: 4),
-              const Text(
-                "INSTINCT POUCH GRAVY",
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              const Text("299₹"),
               const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "299₹",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        "-5%",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  ],
+              ElevatedButton(
+                onPressed: () => _addToCart(productName),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(100, 32),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
-              ),
+                child: const Text("Add to Cart"),
+              )
             ],
           ),
         );
@@ -425,6 +403,31 @@ class _HomeScreenState extends State<HomeScreen> {
           const Text("View All", style: TextStyle(color: Colors.blue)),
         ],
       ),
+    );
+  }
+}
+
+// 🛒 CART PAGE
+class CartPage extends StatelessWidget {
+  final List<String> cartItems;
+
+  const CartPage({super.key, required this.cartItems});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Your Cart")),
+      body: cartItems.isEmpty
+          ? const Center(child: Text("No items in cart"))
+          : ListView.builder(
+              itemCount: cartItems.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: const Icon(Icons.pets, color: Colors.red),
+                  title: Text(cartItems[index]),
+                );
+              },
+            ),
     );
   }
 }
