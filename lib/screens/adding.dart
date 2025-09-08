@@ -50,17 +50,21 @@ class _AddPetPageState extends State<AddPetPage>
 
   /// Pick image
   Future<void> _chooseFile() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        if (_images.length < 3) {
-          _images.add(File(pickedFile.path));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('You can only select up to 3 images')),
-          );
-        }
-      });
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          if (_images.length < 3) {
+            _images.add(File(pickedFile.path));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('⚠️ You can only select up to 3 images')),
+            );
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Image pick error: $e');
     }
   }
 
@@ -117,6 +121,7 @@ class _AddPetPageState extends State<AddPetPage>
         'status': 'active',
       });
 
+      if (!mounted) return;
       setState(() {
         _images.clear();
         selectedType = null;
@@ -125,15 +130,20 @@ class _AddPetPageState extends State<AddPetPage>
         priceController.clear();
       });
 
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Pet submitted successfully!')),
       );
-    } catch (e) {
-      debugPrint('Upload ERROR: $e');
+    } on FirebaseException catch (e) {
+      debugPrint('Firebase ERROR: ${e.message}');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Error: $e')),
+        SnackBar(content: Text('❌ Upload failed: ${e.message}')),
+      );
+    } catch (e) {
+      debugPrint('Unexpected ERROR: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ Something went wrong: $e')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -209,7 +219,9 @@ class _AddPetPageState extends State<AddPetPage>
                     height: 100,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: _images.map((f) => imageFileBox(f)).toList(),
+                      children: _images
+                          .map((f) => imageFileBox(f))
+                          .toList(),
                     ),
                   ),
                 ),
@@ -232,7 +244,8 @@ class _AddPetPageState extends State<AddPetPage>
 
                 animatedItem(
                   index: 4,
-                  child: buildTextField('Description', descriptionController),
+                  child: buildTextField('Description', descriptionController,
+                      maxLines: 3),
                 ),
                 const SizedBox(height: 12),
 
@@ -248,17 +261,20 @@ class _AddPetPageState extends State<AddPetPage>
                   index: 6,
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: OutlinedButton(
+                    child: ElevatedButton(
                       onPressed: _isLoading ? null : _submitPet,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
                       ),
                       child: _isLoading
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Text('Submit'),
                     ),
@@ -278,6 +294,7 @@ class _AddPetPageState extends State<AddPetPage>
         showUnselectedLabels: false,
         onTap: (index) {
           setState(() => _currentIndex = index);
+          // TODO: add navigation to actual pages
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
@@ -290,16 +307,39 @@ class _AddPetPageState extends State<AddPetPage>
     );
   }
 
+  /// Image preview with remove option
   Widget imageFileBox(File file) {
-    return Container(
-      width: 100,
-      height: 100,
-      margin: const EdgeInsets.symmetric(horizontal: 5),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey.shade200,
-        image: DecorationImage(image: FileImage(file), fit: BoxFit.cover),
-      ),
+    return Stack(
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          margin: const EdgeInsets.symmetric(horizontal: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.grey.shade200,
+            image: DecorationImage(image: FileImage(file), fit: BoxFit.cover),
+          ),
+        ),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _images.remove(file);
+              });
+            },
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.black54,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close, size: 18, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -310,7 +350,10 @@ class _AddPetPageState extends State<AddPetPage>
         hintText: 'Choose a ${hint.toLowerCase()}',
         filled: true,
         fillColor: Colors.grey.shade200,
-        border: InputBorder.none,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
       ),
       value: value,
       onChanged: onChanged,
@@ -321,15 +364,19 @@ class _AddPetPageState extends State<AddPetPage>
   }
 
   Widget buildTextField(String hint, TextEditingController controller,
-      {TextInputType inputType = TextInputType.text}) {
+      {TextInputType inputType = TextInputType.text, int maxLines = 1}) {
     return TextField(
       controller: controller,
       keyboardType: inputType,
+      maxLines: maxLines,
       decoration: InputDecoration(
         hintText: 'Enter $hint',
         filled: true,
         fillColor: Colors.grey.shade200,
-        border: InputBorder.none,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
       ),
     );
   }
