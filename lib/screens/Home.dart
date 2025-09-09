@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const AddPetPage()),
+        MaterialPageRoute(builder: (context) => const AddItemPage()),
       );
     } else if (index == 3) {
       Navigator.push(
