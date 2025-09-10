@@ -12,44 +12,57 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin {
   int _currentIndex = 0;
-
-  // 🛒 Simple in-memory cart list
   List<String> cartItems = [];
+
+  late AnimationController _controller;
+  late Animation<double> _fadeIn;
+  late Animation<Offset> _slideFromTop;
+  late Animation<Offset> _slideFromBottom;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+
+    _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    _slideFromTop = Tween<Offset>(
+      begin: const Offset(0, -0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _slideFromBottom = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _controller.forward();
+  }
 
   void _onTabTapped(int index) {
     if (index == 1) {
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ChatPage()),
-      );
+          context, MaterialPageRoute(builder: (context) => const ChatPage()));
     } else if (index == 2) {
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const AddItemPage()),
-      );
+          context, MaterialPageRoute(builder: (context) => const AddItemPage()));
     } else if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const NotificationPage()),
-      );
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const NotificationPage()));
     } else if (index == 4) {
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfilePage()),
-      );
+          context, MaterialPageRoute(builder: (context) => const ProfilePage()));
     } else {
-      setState(() {
-        _currentIndex = index;
-      });
+      setState(() => _currentIndex = index);
     }
   }
 
   void _addToCart(String product) {
-    setState(() {
-      cartItems.add(product);
-    });
+    setState(() => cartItems.add(product));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("$product added to cart")),
     );
@@ -67,23 +80,34 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        elevation: 8,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
+          BottomNavigationBarItem(
+              icon: CircleAvatar(
+                backgroundColor: Colors.red,
+                child: Icon(Icons.add, color: Colors.white),
+              ),
+              label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
         ],
       ),
       body: _currentIndex == 0
-          ? _buildMainContent()
-          : const Center(child: Text('This section is not implemented')),
+          ? FadeTransition(
+              opacity: _fadeIn,
+              child: _buildMainContent(),
+            )
+          : const Center(child: Text('Section not implemented')),
     );
   }
 
@@ -91,12 +115,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          _buildHeader(),
+          SlideTransition(position: _slideFromTop, child: _buildHeader()),
+          const SizedBox(height: 12),
           const CategorySection(),
-          _buildPetTypeSection(),
-          _buildBrandSection(),
-          _buildProductGrid(),
-          _buildFooter(),
+          SlideTransition(
+              position: _slideFromBottom, child: _buildPetTypeSection()),
+          SlideTransition(
+              position: _slideFromBottom, child: _buildBrandSection()),
+          SlideTransition(
+              position: _slideFromBottom, child: _buildProductGrid()),
+          SlideTransition(position: _slideFromBottom, child: _buildFooter()),
         ],
       ),
     );
@@ -105,12 +133,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.teal, Colors.yellowAccent],
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.redAccent, Colors.orange],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.redAccent.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,40 +159,42 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: 'Search for products',
-                    prefixIcon: const Icon(Icons.search),
+                    hintText: '🔍 Search for products',
                     filled: true,
                     fillColor: Colors.white,
+                    prefixIcon: const Icon(Icons.search),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              // 🛒 Cart Icon with Badge
               Stack(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                    icon: const Icon(Icons.shopping_cart,
+                        color: Colors.white, size: 28),
                     onPressed: _openCartPage,
                   ),
                   if (cartItems.isNotEmpty)
                     Positioned(
-                      right: 4,
-                      top: 4,
+                      right: 6,
+                      top: 6,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           cartItems.length.toString(),
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
+                              color: Colors.white, fontSize: 12),
                         ),
                       ),
                     ),
@@ -164,23 +204,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Expanded(
-                flex: 2,
                 child: Text(
-                  "🐾 Petzy\nNo Discount!\nShop at Petzy App and get up to 5%",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  "🐾 Petzy\nExclusive Deals!\nShop & get up to 5% off",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: Image.asset(
-                  'assets/Group 427321126.png',
-                  height: 80,
-                  fit: BoxFit.contain,
-                ),
+              Image.asset(
+                'assets/Group 427321126.png',
+                height: 90,
               ),
             ],
           ),
@@ -205,10 +241,15 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionTitleWithImage(
-            "Products according to pet type", "assets/Vector.png"),
+            "Shop by Pet Type", "assets/Vector.png", () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AllPetTypesPage(petTypes: petTypes)),
+          );
+        }),
         const SizedBox(height: 8),
         SizedBox(
-          height: 100,
+          height: 110,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -216,40 +257,29 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               final petName = petTypes.keys.elementAt(index);
               final imagePath = petTypes[petName];
-
-              return Container(
-                width: 80,
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(horizontal: 8),
                 child: Column(
                   children: [
-                    Container(
-                      height: 72,
-                      width: 72,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(color: Colors.grey.shade300, blurRadius: 5)
-                        ],
-                      ),
+                    CircleAvatar(
+                      radius: 36,
+                      backgroundColor: Colors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Image.asset(imagePath!, fit: BoxFit.contain),
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      petName,
-                      style: const TextStyle(fontSize: 12),
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(petName,
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w500)),
                   ],
                 ),
               );
             },
           ),
         ),
-        const SizedBox(height: 16),
       ],
     );
   }
@@ -260,18 +290,16 @@ class _HomeScreenState extends State<HomeScreen> {
       'assets/me000.png',
       'assets/pet888.png',
     ];
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: brands.map((brand) {
-          return CircleAvatar(
-            backgroundImage: AssetImage(brand),
-            radius: 24,
-            backgroundColor: Colors.white,
-          );
-        }).toList(),
+        children: brands
+            .map((brand) => CircleAvatar(
+                  backgroundImage: AssetImage(brand),
+                  radius: 28,
+                ))
+            .toList(),
       ),
     );
   }
@@ -283,134 +311,127 @@ class _HomeScreenState extends State<HomeScreen> {
       'assets/royal canin.png',
       'assets/4royal.png',
     ];
-
-    return GridView.builder(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(16),
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: productImages.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        childAspectRatio: 0.7,
-      ),
-      itemBuilder: (context, index) {
-        final productName = "Royal Canin ${index + 1}";
-        return Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(12),
+    return Column(
+      children: [
+        _sectionTitleWithImage("Products", "assets/Vector.png", () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AllProductsPage()),
+          );
+        }),
+        GridView.builder(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(16),
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: productImages.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 0.75,
           ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Image.asset(
-                  productImages[index],
-                  height: 100,
-                  fit: BoxFit.contain,
-                ),
+          itemBuilder: (context, index) {
+            final productName = "Royal Canin ${index + 1}";
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeIn,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.grey.shade200,
+                      blurRadius: 6,
+                      offset: const Offset(0, 3))
+                ],
               ),
-              Text(
-                productName,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Image.asset(productImages[index],
+                        height: 110, fit: BoxFit.contain),
+                  ),
+                  Text(productName,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text("299₹", style: TextStyle(color: Colors.grey)),
+                  const Spacer(),
+                  ElevatedButton(
+                    onPressed: () => _addToCart(productName),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text("Add to Cart"),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
-              const Text("299₹"),
-              const SizedBox(height: 6),
-              ElevatedButton(
-                onPressed: () => _addToCart(productName),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(100, 32),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text("Add to Cart"),
-              )
-            ],
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ],
     );
   }
 
   Widget _buildFooter() {
-    return Center(
-      child: SizedBox(
-        width: 325,
-        height: 290,
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFB6C1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                '"Woof Woof"',
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.pink.shade100,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Text(
+              '"Woof Woof"',
+              style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: 8),
+            const Text("Follow Petpaw",
                 style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              RichText(
-                text: const TextSpan(
-                  text: 'Follow ',
-                  style: TextStyle(color: Colors.black, fontSize: 18),
-                  children: [
-                    TextSpan(
-                      text: 'Petpaw',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Image.asset(
-                'assets/follow.png',
-                height: 160,
-                fit: BoxFit.contain,
-              ),
-            ],
-          ),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black)),
+            const SizedBox(height: 20),
+            Image.asset("assets/follow.png", height: 150),
+          ],
         ),
       ),
     );
   }
 
-  Widget _sectionTitleWithImage(String title, String imagePath) {
+  Widget _sectionTitleWithImage(
+      String title, String imagePath, VoidCallback onViewAll) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          Image.asset(imagePath, height: 24, width: 24, fit: BoxFit.contain),
+          Image.asset(imagePath, height: 24),
           const SizedBox(width: 8),
           Text(title,
               style:
                   const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const Spacer(),
-          const Text("View All", style: TextStyle(color: Colors.blue)),
+          InkWell(
+            onTap: onViewAll,
+            child: const Text("View All",
+                style: TextStyle(color: Colors.blue)),
+          ),
         ],
       ),
     );
   }
 }
 
-// 🛒 CART PAGE
 class CartPage extends StatelessWidget {
   final List<String> cartItems;
-
   const CartPage({super.key, required this.cartItems});
 
   @override
@@ -428,6 +449,104 @@ class CartPage extends StatelessWidget {
                 );
               },
             ),
+    );
+  }
+}
+
+/// 🔹 All Products Page
+class AllProductsPage extends StatelessWidget {
+  const AllProductsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final allProducts = [
+      {"name": "Pellet Food", "price": "199₹"},
+      {"name": "Grass Bundle", "price": "99₹"},
+      {"name": "Pet Feed", "price": "299₹"},
+      {"name": "Candy Treat", "price": "49₹"},
+    ];
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("All Products")),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: allProducts.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.8,
+        ),
+        itemBuilder: (context, index) {
+          final product = allProducts[index];
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.grey.shade200,
+                    blurRadius: 6,
+                    offset: const Offset(0, 3))
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.shopping_bag, size: 40, color: Colors.red),
+                const SizedBox(height: 10),
+                Text(product["name"]!,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold)),
+                Text(product["price"]!,
+                    style: const TextStyle(color: Colors.grey)),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// 🔹 All Pet Types Page
+class AllPetTypesPage extends StatelessWidget {
+  final Map<String, String> petTypes;
+  const AllPetTypesPage({super.key, required this.petTypes});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("All Pet Types")),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: petTypes.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+        ),
+        itemBuilder: (context, index) {
+          final petName = petTypes.keys.elementAt(index);
+          final imagePath = petTypes[petName]!;
+          return Column(
+            children: [
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(imagePath, fit: BoxFit.contain),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(petName,
+                  style: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w500)),
+            ],
+          );
+        },
+      ),
     );
   }
 }

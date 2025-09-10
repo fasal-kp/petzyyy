@@ -13,7 +13,8 @@ class AddItemPage extends StatefulWidget {
   State<AddItemPage> createState() => _AddItemPageState();
 }
 
-class _AddItemPageState extends State<AddItemPage> {
+class _AddItemPageState extends State<AddItemPage>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
@@ -33,6 +34,24 @@ class _AddItemPageState extends State<AddItemPage> {
     "Jobs",
     "Others",
   ];
+
+  late AnimationController _controller;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 700));
+    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   /// 📷 Pick image from gallery
   Future<void> _pickImage() async {
@@ -59,9 +78,7 @@ class _AddItemPageState extends State<AddItemPage> {
 
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw Exception("User not logged in");
-      }
+      if (user == null) throw Exception("User not logged in");
 
       final id = const Uuid().v4();
 
@@ -87,18 +104,17 @@ class _AddItemPageState extends State<AddItemPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("✅ Item added successfully"),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context); // go back after success
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("❌ Error: ${e.toString()}"),
-            backgroundColor: Colors.red,
-          ),
+              content: Text("❌ Error: ${e.toString()}"),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -109,121 +125,165 @@ class _AddItemPageState extends State<AddItemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Post an Ad"),
-        backgroundColor: Colors.red,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image Picker
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  height: 180,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade400),
+      body: Stack(
+        children: [
+          /// 🌈 Gradient Background (Petzy Theme)
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFFF9A9E), // soft pink
+                    Color(0xFFFAD0C4), // peach
+                    Color(0xFFFBC2EB), // light purple
+                    Color(0xFFA18CD1), // soft violet
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+          ),
+
+          /// ✨ Fade-in form with card style
+          FadeTransition(
+            opacity: _fadeAnim,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: Card(
+                  elevation: 12,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30), // 4-corner trend
                   ),
-                  child: _selectedImage == null
-                      ? const Center(
-                          child: Text("📷 Tap to upload image"),
-                        )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child:
-                              Image.file(_selectedImage!, fit: BoxFit.cover),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 16),
+                  color: Colors.white.withOpacity(0.85),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            "✨ Post a New Ad",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.redAccent),
+                          ),
+                          const SizedBox(height: 20),
 
-              // Title
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: "Title",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? "Enter item title" : null,
-              ),
-              const SizedBox(height: 12),
+                          // 📷 Image Picker
+                          GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              height: 180,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.grey.shade400),
+                              ),
+                              child: _selectedImage == null
+                                  ? const Center(
+                                      child: Text("📷 Tap to upload image",
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.black54)),
+                                    )
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.file(_selectedImage!,
+                                          fit: BoxFit.cover),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
 
-              // Description
-              TextFormField(
-                controller: _descController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: "Description",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? "Enter item description" : null,
-              ),
-              const SizedBox(height: 12),
+                          // Title
+                          _buildTextField(_titleController, "Title",
+                              "Enter item title"),
+                          const SizedBox(height: 14),
 
-              // Price
-              TextFormField(
-                controller: _priceController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: "Price (₹)",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? "Enter item price" : null,
-              ),
-              const SizedBox(height: 12),
+                          // Description
+                          _buildTextField(_descController, "Description",
+                              "Enter item description",
+                              maxLines: 3),
+                          const SizedBox(height: 14),
 
-              // Category Dropdown
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: "Category",
-                  border: OutlineInputBorder(),
-                ),
-                value: _selectedCategory,
-                items: _categories
-                    .map((cat) => DropdownMenuItem(
-                          value: cat,
-                          child: Text(cat),
-                        ))
-                    .toList(),
-                onChanged: (value) =>
-                    setState(() => _selectedCategory = value),
-                validator: (value) =>
-                    value == null ? "Select a category" : null,
-              ),
-              const SizedBox(height: 20),
+                          // Price
+                          _buildTextField(_priceController, "Price (₹)",
+                              "Enter item price",
+                              keyboardType: TextInputType.number),
+                          const SizedBox(height: 14),
 
-              // Upload Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isUploading ? null : _uploadItem,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                          // Category
+                          DropdownButtonFormField<String>(
+                            decoration: _inputDecoration("Category"),
+                            value: _selectedCategory,
+                            items: _categories
+                                .map((cat) => DropdownMenuItem(
+                                    value: cat, child: Text(cat)))
+                                .toList(),
+                            onChanged: (value) =>
+                                setState(() => _selectedCategory = value),
+                            validator: (value) =>
+                                value == null ? "Select a category" : null,
+                          ),
+                          const SizedBox(height: 25),
+
+                          // Post Button
+                          ElevatedButton(
+                            onPressed: _isUploading ? null : _uploadItem,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              elevation: 6,
+                            ),
+                            child: _isUploading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
+                                : const Text("🚀 Post Ad",
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  child: _isUploading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Post Ad",
-                          style: TextStyle(fontSize: 18)),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+
+  /// 🔹 Input field builder
+  Widget _buildTextField(TextEditingController controller, String label,
+      String hint,
+      {int maxLines = 1, TextInputType keyboardType = TextInputType.text}) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      decoration: _inputDecoration(label),
+      validator: (value) => value!.isEmpty ? hint : null,
+    );
+  }
+
+  /// 🔹 Stylish Input Decoration
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+      filled: true,
+      fillColor: Colors.white,
     );
   }
 }
