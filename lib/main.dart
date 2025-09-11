@@ -1,12 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:petzyyy/screens/Home.dart';
 import 'package:petzyyy/screens/LoginScreen.dart';
+import 'package:petzyyy/screens/adminSettings.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(); // ✅ Firebase init
   runApp(const MyApp());
 }
 
@@ -17,15 +20,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Petzyyy',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        scaffoldBackgroundColor: Colors.white,
       ),
       home: const SplashScreen(),
     );
   }
 }
 
+/// 🌟 Splash Screen with Animation + Auth Check
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -43,7 +49,6 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Animation controller
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -51,18 +56,27 @@ class _SplashScreenState extends State<SplashScreen>
 
     _circleAnimation =
         CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
-
     _logoAnimation =
         CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
     _controller.forward();
 
-    // Navigate after delay
+    /// ✅ Check if user is logged in after splash
     Future.delayed(const Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // User logged in → go to Home
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } else {
+        // User not logged in → go to Login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
     });
   }
 
@@ -94,7 +108,7 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // Background Gradient
+          // 🌈 Background Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -105,13 +119,13 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // Animated Corner Circles
+          // 🎨 Animated Corner Circles
           _buildCornerCircle(Alignment.topLeft, Colors.white),
           _buildCornerCircle(Alignment.topRight, Colors.pinkAccent),
           _buildCornerCircle(Alignment.bottomLeft, Colors.orangeAccent),
           _buildCornerCircle(Alignment.bottomRight, Colors.greenAccent),
 
-          // Center Logo + Text
+          // 🐾 Center Logo + Text
           Center(
             child: FadeTransition(
               opacity: _logoAnimation,
@@ -119,7 +133,7 @@ class _SplashScreenState extends State<SplashScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/Group 427321205.png',
+                    'assets/Group 427321205.png', // ✅ ensure asset in pubspec.yaml
                     height: 180,
                     fit: BoxFit.contain,
                   ),

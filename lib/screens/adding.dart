@@ -50,13 +50,36 @@ class _AddItemPageState extends State<AddItemPage>
   @override
   void dispose() {
     _controller.dispose();
+    _titleController.dispose();
+    _descController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
-  /// 📷 Pick image from gallery
+  /// 📷 Pick image from gallery/camera
   Future<void> _pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final picker = ImagePicker();
+    final pickedFile = await showDialog<XFile?>(
+      context: context,
+      builder: (_) => SimpleDialog(
+        title: const Text("Choose Image"),
+        children: [
+          SimpleDialogOption(
+            child: const Text("📷 Camera"),
+            onPressed: () async {
+              Navigator.pop(context, await picker.pickImage(source: ImageSource.camera));
+            },
+          ),
+          SimpleDialogOption(
+            child: const Text("🖼️ Gallery"),
+            onPressed: () async {
+              Navigator.pop(context, await picker.pickImage(source: ImageSource.gallery));
+            },
+          ),
+        ],
+      ),
+    );
+
     if (pickedFile != null) {
       setState(() => _selectedImage = File(pickedFile.path));
     }
@@ -107,6 +130,15 @@ class _AddItemPageState extends State<AddItemPage>
             backgroundColor: Colors.green,
           ),
         );
+        // Clear form
+        _formKey.currentState!.reset();
+        _titleController.clear();
+        _descController.clear();
+        _priceController.clear();
+        setState(() {
+          _selectedImage = null;
+          _selectedCategory = null;
+        });
         Navigator.pop(context);
       }
     } catch (e) {
@@ -154,9 +186,9 @@ class _AddItemPageState extends State<AddItemPage>
                 child: Card(
                   elevation: 12,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30), // 4-corner trend
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withOpacity(0.9),
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Form(
@@ -223,7 +255,16 @@ class _AddItemPageState extends State<AddItemPage>
                             value: _selectedCategory,
                             items: _categories
                                 .map((cat) => DropdownMenuItem(
-                                    value: cat, child: Text(cat)))
+                                      value: cat,
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.category,
+                                              color: Colors.redAccent),
+                                          const SizedBox(width: 8),
+                                          Text(cat),
+                                        ],
+                                      ),
+                                    ))
                                 .toList(),
                             onChanged: (value) =>
                                 setState(() => _selectedCategory = value),
@@ -259,6 +300,15 @@ class _AddItemPageState extends State<AddItemPage>
               ),
             ),
           ),
+
+          /// ⏳ Loading Overlay
+          if (_isUploading)
+            Container(
+              color: Colors.black45,
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
         ],
       ),
     );
@@ -273,7 +323,13 @@ class _AddItemPageState extends State<AddItemPage>
       maxLines: maxLines,
       keyboardType: keyboardType,
       decoration: _inputDecoration(label),
-      validator: (value) => value!.isEmpty ? hint : null,
+      validator: (value) {
+        if (value == null || value.isEmpty) return hint;
+        if (label == "Price (₹)" && double.tryParse(value) == null) {
+          return "Enter a valid price";
+        }
+        return null;
+      },
     );
   }
 
