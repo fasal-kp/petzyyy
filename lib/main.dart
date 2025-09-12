@@ -8,7 +8,7 @@ import 'package:petzyyy/screens/adminSettings.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // ✅ Firebase init
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -30,7 +30,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// 🌟 Splash Screen with Animation + Auth Check
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -60,17 +59,14 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    /// ✅ Check if user is logged in after splash
     Future.delayed(const Duration(seconds: 4), () {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // User logged in → go to Home
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       } else {
-        // User not logged in → go to Login
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -107,7 +103,6 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // 🌈 Background Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -118,13 +113,11 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // 🎨 Animated Corner Circles
           _buildCornerCircle(Alignment.topLeft, Colors.white),
           _buildCornerCircle(Alignment.topRight, Colors.pinkAccent),
           _buildCornerCircle(Alignment.bottomLeft, Colors.orangeAccent),
           _buildCornerCircle(Alignment.bottomRight, Colors.greenAccent),
 
-          // 🐾 Center Logo + Text
           Center(
             child: FadeTransition(
               opacity: _logoAnimation,
@@ -132,7 +125,7 @@ class _SplashScreenState extends State<SplashScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/Group 427321205.png', // ✅ ensure asset in pubspec.yaml
+                    'assets/Group 427321205.png', 
                     height: 180,
                     fit: BoxFit.contain,
                   ),
