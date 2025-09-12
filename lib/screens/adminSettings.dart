@@ -6,6 +6,13 @@ import 'manage_ads_page.dart';
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
 
+  void _navigate(BuildContext context, Widget page) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => page),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,47 +24,65 @@ class AdminDashboard extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          _buildAdminTile(
-            context,
+          AdminTile(
             icon: Icons.pets,
             title: "Manage Pets",
             subtitle: "Add, edit or remove pet listings",
-            page: const ManagePetsPage(),
+            color: Colors.deepPurple,
+            onTap: () => _navigate(context, const ManagePetsPage()),
           ),
-          const Divider(),
-          _buildAdminTile(
-            context,
+          AdminTile(
             icon: Icons.people,
             title: "Manage Users",
             subtitle: "View and control registered users",
-            page: const ManageUsersPage(),
+            color: Colors.blueAccent,
+            onTap: () => _navigate(context, const ManageUsersPage()),
           ),
-          const Divider(),
-          _buildAdminTile(
-            context,
+          AdminTile(
             icon: Icons.shopping_bag,
             title: "Manage Ads",
             subtitle: "Approve or delete user ads",
-            page: const ManageAdsPage(),
+            color: Colors.orangeAccent,
+            onTap: () => _navigate(context, const ManageAdsPage()),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildAdminTile(BuildContext context,
-      {required IconData icon,
-      required String title,
-      required String subtitle,
-      required Widget page}) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.deepPurple, size: 32),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.arrow_forward_ios),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => page),
+/// 🔹 Reusable AdminTile
+class AdminTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  const AdminTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: Icon(icon, color: color, size: 32),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+        onTap: onTap,
       ),
     );
   }
