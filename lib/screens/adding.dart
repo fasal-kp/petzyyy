@@ -341,5 +341,7 @@ class _AddItemPageState extends State<AddItemPage>
       filled: true,
       fillColor: Colors.white,
     );
+
+    
   }
 }
