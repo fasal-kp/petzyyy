@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petzyyy/screens/LoginScreen.dart';
-import 'EditProfilePage.dart';
+import 'package:petzyyy/screens/editProfile.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -14,11 +15,9 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 4;
-  String _name = "fasal";
-  String _phone = "+91 123456789";
-  File? _profileImage;
-
   late AnimationController _controller;
+
+  final uid = FirebaseAuth.instance.currentUser?.uid;
 
   final List<Map<String, dynamic>> _menuItems = [
     {"icon": Icons.person_outline, "title": "Profile"},
@@ -50,10 +49,10 @@ class _ProfilePageState extends State<ProfilePage>
     setState(() => _currentIndex = index);
   }
 
-  void _handleTileTap(String title) {
+  void _handleTileTap(String title, String name, String phone, String photoUrl) {
     switch (title) {
       case 'Profile':
-        _openEditProfile();
+        _openEditProfile(name, phone, photoUrl);
         break;
       case 'Logout':
         _logoutUser();
@@ -77,27 +76,28 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
-  Future<void> _openEditProfile() async {
+  Future<void> _openEditProfile(
+      String name, String phone, String photoUrl) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => EditProfilePage(
-          name: _name,
-          phone: _phone,
-          currentImage: _profileImage,
+          name: name,
+          phone: phone,
+          imagePath: photoUrl, email: '',
         ),
       ),
     );
-    if (result != null) {
-      setState(() {
-        _name = result["name"];
-        _profileImage = result["image"];
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (uid == null) {
+      return const Scaffold(
+        body: Center(child: Text("User not logged in")),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -109,112 +109,129 @@ class _ProfilePageState extends State<ProfilePage>
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 30),
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream:
+            FirebaseFirestore.instance.collection("users").doc(uid).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text("No profile data found"));
+          }
 
-          /// Animated Profile Picture
-          ScaleTransition(
-            scale: CurvedAnimation(
-              parent: _controller,
-              curve: Curves.elasticOut,
-            ),
-            child: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                CircleAvatar(
-                  radius: 55,
-                  backgroundColor: Colors.white,
-                  backgroundImage: _profileImage != null
-                      ? FileImage(_profileImage!)
-                      : const AssetImage("assets/profile.jpg") as ImageProvider,
+          final data = snapshot.data!.data();
+          if (data == null) {
+            return const Center(child: Text("Profile data is empty"));
+          }
+
+          final name = data["name"] ?? "No Name";
+          final phone = data["phone"] ?? "No Phone";
+          final photoUrl = data["photoUrl"] ?? "";
+
+          return Column(
+            children: [
+              const SizedBox(height: 30),
+
+              /// Animated Profile Picture
+              ScaleTransition(
+                scale: CurvedAnimation(
+                  parent: _controller,
+                  curve: Curves.elasticOut,
                 ),
-                Positioned(
-                  right: 4,
-                  bottom: 4,
-                  child: GestureDetector(
-                    onTap: _openEditProfile,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 4,
-                              offset: Offset(0, 2))
-                        ],
-                      ),
-                      child: const Icon(Icons.edit,
-                          size: 18, color: Colors.white),
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 55,
+                      backgroundColor: Colors.white,
+                      backgroundImage: (photoUrl.isNotEmpty)
+                          ? NetworkImage(photoUrl)
+                          : const AssetImage("assets/Avatars.png")
+                              as ImageProvider,
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 12),
-          Text(
-            _name,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _phone,
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 25),
-
-          /// Animated Menu List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _menuItems.length,
-              itemBuilder: (context, index) {
-                final item = _menuItems[index];
-                return SlideTransition(
-                  position: Tween<Offset>(
-                          begin: const Offset(1, 0), end: Offset.zero)
-                      .animate(CurvedAnimation(
-                          parent: _controller,
-                          curve: Interval(index * 0.1, 1.0,
-                              curve: Curves.easeOut))),
-                  child: FadeTransition(
-                    opacity: CurvedAnimation(
-                        parent: _controller,
-                        curve: Interval(index * 0.1, 1.0,
-                            curve: Curves.easeOut)),
-                    child: Card(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      elevation: 2,
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.red.shade50,
-                          child: Icon(item["icon"], color: Colors.red),
+                    Positioned(
+                      right: 4,
+                      bottom: 4,
+                      child: GestureDetector(
+                        onTap: () => _openEditProfile(name, phone, photoUrl),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2))
+                            ],
+                          ),
+                          child: const Icon(Icons.edit,
+                              size: 18, color: Colors.white),
                         ),
-                        title: Text(item["title"],
-                            style: const TextStyle(fontSize: 16)),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () => _handleTileTap(item["title"]),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+              Text(name,
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(phone, style: TextStyle(color: Colors.grey[600])),
+              const SizedBox(height: 25),
+
+              /// Animated Menu List
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _menuItems.length,
+                  itemBuilder: (context, index) {
+                    final item = _menuItems[index];
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                              begin: const Offset(1, 0), end: Offset.zero)
+                          .animate(CurvedAnimation(
+                              parent: _controller,
+                              curve: Interval(index * 0.1, 1.0,
+                                  curve: Curves.easeOut))),
+                      child: FadeTransition(
+                        opacity: CurvedAnimation(
+                            parent: _controller,
+                            curve: Interval(index * 0.1, 1.0,
+                                curve: Curves.easeOut)),
+                        child: Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          elevation: 2,
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.red.shade50,
+                              child: Icon(item["icon"], color: Colors.red),
+                            ),
+                            title: Text(item["title"],
+                                style: const TextStyle(fontSize: 16)),
+                            trailing:
+                                const Icon(Icons.arrow_forward_ios, size: 16),
+                            onTap: () => _handleTileTap(
+                                item["title"], name, phone, photoUrl),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
 
-      /// Modern Bottom Nav
+      /// Bottom Navigation
       bottomNavigationBar: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         child: BottomNavigationBar(
@@ -244,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage>
   }
 }
 
-/// Simple placeholder
+/// Simple placeholder page
 class SimplePage extends StatelessWidget {
   final String title;
   const SimplePage({super.key, required this.title});

@@ -333,7 +333,7 @@ class _AddItemPageState extends State<AddItemPage>
     );
   }
 
-  /// 🔹 Stylish Input Decoration
+  // 🔹 Stylish Input Decoration
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
