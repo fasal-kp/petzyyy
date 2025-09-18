@@ -74,8 +74,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // 🔥 Remove default white background
+      backgroundColor: Colors.transparent,
+
       body: Container(
-        // Gradient Background
+        width: double.infinity,
+        height: double.infinity,
+
+        // 🔥 Full gradient background
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF6D5DF6), Color(0xFF46A0AE)],
@@ -83,11 +89,12 @@ class _LoginScreenState extends State<LoginScreen> {
             end: Alignment.bottomRight,
           ),
         ),
+
         child: SafeArea(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 50),
 
                 /// Top illustration
                 Center(
@@ -97,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
 
                 /// Welcome text
                 const Text(
@@ -112,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 40),
                   child: Text(
-                      "With more adoptable pets than ever, we have an urgent need for pet adopters.",
+                    "With more adoptable pets than ever, we have an urgent need for pet adopters.",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.white70, fontSize: 15),
                   ),
@@ -120,22 +127,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 40),
 
-                /// Glassmorphic Input Card
+                /// 🔥 Transparent input card with no white patches
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 24),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.white24, width: 1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
                   child: Column(
                     children: [
@@ -155,11 +155,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           prefixIcon: const Icon(Icons.phone,
                               color: Colors.white70),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.1),
+                          fillColor: Colors.white.withOpacity(0.05),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                const BorderSide(color: Colors.white70),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
@@ -212,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 50),
 
                 /// Footer text
                 const Text(
