@@ -4,6 +4,10 @@ import 'package:petzyyy/screens/profile.dart';
 import 'Chat.dart';
 import 'notification.dart';
 import 'category_section.dart';
+import 'package:petzyyy/models/cartpage_.dart';
+import 'package:petzyyy/screens/cart_item.dart';
+import 'package:petzyyy/screens/AllPetTypespage.dart';
+import 'package:petzyyy/screens/all_products_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,10 +16,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  List<String> cartItems = [];
+  List<CartItem> cartItems = [];
 
   late AnimationController _controller;
   late Animation<double> _fadeIn;
@@ -27,19 +30,15 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     _controller =
         AnimationController(vsync: this, duration: const Duration(seconds: 2));
-
     _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
-
     _slideFromTop = Tween<Offset>(
       begin: const Offset(0, -0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-
     _slideFromBottom = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-
     _controller.forward();
   }
 
@@ -48,23 +47,26 @@ class _HomeScreenState extends State<HomeScreen>
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => const ChatPage()));
     } else if (index == 2) {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const AddItemPage()));
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const AddItemPage()));
     } else if (index == 3) {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => const NotificationPage()));
     } else if (index == 4) {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const ProfilePage()));
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()));
     } else {
       setState(() => _currentIndex = index);
     }
   }
 
-  void _addToCart(String product) {
-    setState(() => cartItems.add(product));
+  void _addToCart(String productName, String imageUrl, double price) {
+    setState(() {
+      cartItems
+          .add(CartItem(name: productName, imageUrl: imageUrl, price: price));
+    });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("$product added to cart")),
+      SnackBar(content: Text("$productName added to cart")),
     );
   }
 
@@ -240,11 +242,11 @@ class _HomeScreenState extends State<HomeScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitleWithImage(
-            "Shop by Pet Type", "assets/Vector.png", () {
+        _sectionTitleWithImage("Shop by Pet Type", "assets/Vector.png", () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => AllPetTypesPage(petTypes: petTypes)),
+            MaterialPageRoute(
+                builder: (_) => AllPetTypesPage(petTypes: petTypes)),
           );
         }),
         const SizedBox(height: 8),
@@ -316,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen>
         _sectionTitleWithImage("Products", "assets/Vector.png", () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const AllProductsPage()),
+            MaterialPageRoute(builder: (_) => const AllProductsPage(products: [],)),
           );
         }),
         GridView.builder(
@@ -332,6 +334,8 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           itemBuilder: (context, index) {
             final productName = "Royal Canin ${index + 1}";
+            final imagePath = productImages[index];
+            final price = 299.0;
             return AnimatedContainer(
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeIn,
@@ -349,16 +353,17 @@ class _HomeScreenState extends State<HomeScreen>
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Image.asset(productImages[index],
+                    child: Image.asset(imagePath,
                         height: 110, fit: BoxFit.contain),
                   ),
                   Text(productName,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 14)),
-                  const Text("299₹", style: TextStyle(color: Colors.grey)),
+                  Text("₹$price", style: const TextStyle(color: Colors.grey)),
                   const Spacer(),
                   ElevatedButton(
-                    onPressed: () => _addToCart(productName),
+                    onPressed: () => _addToCart(productName,
+                        "https://i.ibb.co/5rj1QfN/dog-food.jpg", price),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
@@ -389,10 +394,8 @@ class _HomeScreenState extends State<HomeScreen>
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Text(
-              '"Woof Woof"',
-              style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),
-            ),
+            const Text('"Woof Woof"',
+                style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic)),
             const SizedBox(height: 8),
             const Text("Follow Petpaw",
                 style: TextStyle(
@@ -421,131 +424,9 @@ class _HomeScreenState extends State<HomeScreen>
           const Spacer(),
           InkWell(
             onTap: onViewAll,
-            child: const Text("View All",
-                style: TextStyle(color: Colors.blue)),
+            child: const Text("View All", style: TextStyle(color: Colors.blue)),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class CartPage extends StatelessWidget {
-  final List<String> cartItems;
-  const CartPage({super.key, required this.cartItems});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Your Cart")),
-      body: cartItems.isEmpty
-          ? const Center(child: Text("No items in cart"))
-          : ListView.builder(
-              itemCount: cartItems.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: const Icon(Icons.pets, color: Colors.red),
-                  title: Text(cartItems[index]),
-                );
-              },
-            ),
-    );
-  }
-}
-
-/// 🔹 All Products Page
-class AllProductsPage extends StatelessWidget {
-  const AllProductsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final allProducts = [
-      {"name": "Pellet Food", "price": "199₹"},
-      {"name": "Grass Bundle", "price": "99₹"},
-      {"name": "Pet Feed", "price": "299₹"},
-      {"name": "Candy Treat", "price": "49₹"},
-    ];
-
-    return Scaffold(
-      appBar: AppBar(title: const Text("All Products")),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: allProducts.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 0.8,
-        ),
-        itemBuilder: (context, index) {
-          final product = allProducts[index];
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.grey.shade200,
-                    blurRadius: 6,
-                    offset: const Offset(0, 3))
-              ],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.shopping_bag, size: 40, color: Colors.red),
-                const SizedBox(height: 10),
-                Text(product["name"]!,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.bold)),
-                Text(product["price"]!,
-                    style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// 🔹 All Pet Types Page
-class AllPetTypesPage extends StatelessWidget {
-  final Map<String, String> petTypes;
-  const AllPetTypesPage({super.key, required this.petTypes});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("All Pet Types")),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: petTypes.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-        ),
-        itemBuilder: (context, index) {
-          final petName = petTypes.keys.elementAt(index);
-          final imagePath = petTypes[petName]!;
-          return Column(
-            children: [
-              CircleAvatar(
-                radius: 36,
-                backgroundColor: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image.asset(imagePath, fit: BoxFit.contain),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(petName,
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w500)),
-            ],
-          );
-        },
       ),
     );
   }
